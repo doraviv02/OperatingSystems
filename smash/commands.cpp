@@ -1,20 +1,23 @@
 //		commands.c
 //********************************************
 #include "commands.h"
+#include "job.h"
 //********************************************
 // function name: ExeCmd
 // Description: interperts and executes built-in commands
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
-int ExeCmd(void* jobs, char* lineSize, char* cmdString)
+char old_pwd[MAX_LINE_SIZE] = "";
+
+int ExeCmd(job* jobs, char* lineSize, char* cmdString)
 {
 	char* cmd; 
 	char* args[MAX_ARG];
 	char pwd[MAX_LINE_SIZE];
-	char* delimiters = " \t\n";  
+	const char* delimiters = " \t\n";  
 	int i = 0, num_arg = 0;
-	bool illegal_cmd = FALSE; // illegal command
+	bool illegal_cmd = false; // illegal command
     	cmd = strtok(lineSize, delimiters);
 	if (cmd == NULL)
 		return 0; 
@@ -26,6 +29,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 			num_arg++; 
  
 	}
+	char new_pwd[MAX_LINE_SIZE];
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
@@ -33,22 +37,40 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
 /*************************************************/
 	if (!strcmp(cmd, "cd") ) 
 	{
-		
+ 		if (num_arg > 1) printf("smash error: cd: too many arguments\n");
+		else{
+			if(strcmp(args[1], "-") == 0){
+				if (strlen(old_pwd) == 0)
+					printf("smash error: cd: OLDPWD not set\n");
+				else{
+					strcpy(new_pwd, getcwd(pwd, MAX_LINE_SIZE));
+					chdir(old_pwd);
+					strcpy(old_pwd, new_pwd);
+				}
+
+			}
+			else{
+				strcpy(old_pwd, getcwd(pwd, MAX_LINE_SIZE));
+				chdir(args[1]);
+			}
+		}
 	} 
 	/*************************************************/
 	else if (!strcmp(cmd, "pwd")) 
 	{
-		
+		getcwd(pwd, MAX_LINE_SIZE);
+		printf("%s\n", pwd);
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "jobs")) 
 	{
- 		
+	
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "showpid")) 
 	{
-		
+		pid_t pid = getpid();
+		printf("smash pid is %d\n", pid);
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "fg")) 
@@ -81,7 +103,7 @@ int ExeCmd(void* jobs, char* lineSize, char* cmdString)
  		ExeExternal(args, cmdString);
 	 	return 0;
 	}
-	if (illegal_cmd == TRUE)
+	if (illegal_cmd == true)
 	{
 		printf("smash error: > \"%s\"\n", cmdString);
 		return 1;
@@ -105,6 +127,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 					/* 
 					your code
 					*/
+				break;
         	case 0 :
                 	// Child Process
                		setpgrp();
@@ -114,6 +137,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 					/* 
 					your code
 					*/
+				break;
 			
 			default:
                 	// Add your code here
@@ -121,6 +145,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 					/* 
 					your code
 					*/
+				break;
 	}
 }
 //**************************************************************************************
@@ -129,11 +154,11 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 // Parameters: command string, pointer to jobs
 // Returns: 0- BG command -1- if not
 //**************************************************************************************
-int BgCmd(char* lineSize, void* jobs)
+int BgCmd(char* lineSize, job* jobs)
 {
 
 	char* Command;
-	char* delimiters = " \t\n";
+	const char* delimiters = " \t\n";
 	char *args[MAX_ARG];
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
