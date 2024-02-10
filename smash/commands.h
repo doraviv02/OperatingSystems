@@ -13,8 +13,10 @@
 #define MAX_ARG 20
 #include "job.h"
 
-int BgCmd(char* lineSize, job* jobs);
-int ExeCmd(job* jobs, char* lineSize, char* cmdString);
+using namespace std;
+
+int BgCmd(char* lineSize, vector<job> &jobs);
+int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString);
 void ExeExternal(char *args[MAX_ARG], char* cmdString);
 #endif
 

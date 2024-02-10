@@ -1,7 +1,8 @@
-//		commands.c
+//		commands.cpp
 //********************************************
 #include "commands.h"
 #include "job.h"
+#define DIFF_ARGS 2
 
 using namespace std;
 //********************************************
@@ -97,7 +98,28 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 	/*************************************************/	
 	else if (!strcmp(cmd, "diff"))
 	{
-   		
+   		if (num_arg != DIFF_ARGS){
+			printf("smash error: diff: invalid arguments\n");
+		}
+		else{
+			FILE *f1 = fopen(args[1], "r");
+			//TODO: figure out system call error
+			FILE *f2 = fopen(args[2], "r");
+			// compare the two files character wise
+			int c1 = getc(f1), c2 = getc(f2);
+			
+		
+			while (c1 == c2 && c1 != EOF && c2 != EOF){
+				c1 = getc(f1);
+				c2 = getc(f2);
+			}
+			if (c1 == EOF && c2 == EOF){
+				printf("0\n");
+			}
+			else{
+				printf("1\n");
+			}
+		}
 	} 
 	/*************************************************/	
 	else // external command
