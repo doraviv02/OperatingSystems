@@ -2,6 +2,8 @@
 //********************************************
 #include "commands.h"
 #include "job.h"
+
+using namespace std;
 //********************************************
 // function name: ExeCmd
 // Description: interperts and executes built-in commands
@@ -10,7 +12,7 @@
 //**************************************************************************************
 char old_pwd[MAX_LINE_SIZE] = "";
 
-int ExeCmd(job* jobs, char* lineSize, char* cmdString)
+int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 {
 	char* cmd; 
 	char* args[MAX_ARG];
@@ -154,7 +156,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 // Parameters: command string, pointer to jobs
 // Returns: 0- BG command -1- if not
 //**************************************************************************************
-int BgCmd(char* lineSize, job* jobs)
+int BgCmd(char* lineSize, vector<job> &jobs)
 {
 
 	char* Command;

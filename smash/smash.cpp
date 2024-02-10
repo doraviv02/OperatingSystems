@@ -1,4 +1,4 @@
-/*	smash.c
+/*	smash.cpp
 main file. This file contains the main function of smash
 *******************************************************************/
 #include <sys/types.h>
@@ -8,16 +8,20 @@ main file. This file contains the main function of smash
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <vector>
+#include "job.h"
 #include "commands.h"
 #include "signals.h"
+
 #define MAX_LINE_SIZE 80
 #define MAXARGS 20
 #define MAX_JOBS 100
 
+using namespace std;
 
 char* L_Fg_Cmd;
-//job* jobs = NULL; //This represents the list of jobs. Please change to a preferred type (e.g array of char*)
-job jobs[MAX_JOBS];
+vector<job> jobs;
+//job jobs[MAX_JOBS];
 char lineSize[MAX_LINE_SIZE]; 
 //**************************************************************************************
 // function name: main

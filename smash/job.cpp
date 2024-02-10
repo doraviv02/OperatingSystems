@@ -2,6 +2,7 @@
 #include "job.h"
 
 
+
 job::job(int job_id, int pid, char* command, bool isStopped, bool isDone, time_t start, time_t end){
     this->job_id = job_id;
     this->pid = pid;

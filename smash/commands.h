@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <vector>
 #define MAX_LINE_SIZE 80
 #define MAX_ARG 20
 #include "job.h"
