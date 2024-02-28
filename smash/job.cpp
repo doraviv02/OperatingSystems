@@ -3,12 +3,11 @@
 
 
 
-job::job(int job_id, int pid, char* command, bool isStopped, bool isDone, time_t start, time_t end){
+job::job(int job_id, int pid, char* command, bool isStopped, time_t start, time_t end){
     this->job_id = job_id;
     this->pid = pid;
     this->command = command;
     this->isStopped = isStopped;
-    this->isDone = isDone;
     this->start = start;
     this->end = end;
 }
@@ -29,9 +28,6 @@ bool job::getIsStopped(){
     return this->isStopped;
 }
 
-bool job::getIsDone(){
-    return this->isDone;
-}
 
 time_t job::getStart(){
     return this->start;
@@ -57,9 +53,6 @@ void job::setIsStopped(bool isStopped){
     this->isStopped = isStopped;
 }
 
-void job::setIsDone(bool isDone){
-    this->isDone = isDone;
-}
 
 void job::setStart(time_t start){
     this->start = start;

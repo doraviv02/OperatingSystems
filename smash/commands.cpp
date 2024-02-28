@@ -2,6 +2,8 @@
 //********************************************
 #include "commands.h"
 #include "job.h"
+#include "signals.h"
+#include <iostream>
 #define DIFF_ARGS 2
 
 using namespace std;
@@ -67,7 +69,27 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 	/*************************************************/
 	else if (!strcmp(cmd, "jobs")) 
 	{
-	
+		int job_id, pid;
+		char* command;
+		bool isStopped;
+		time_t start;
+		time_t* now = new time_t;
+		time(now);
+		
+		for (int i = 0; i < jobs.size(); i++)
+		{
+			job_id = jobs[i].getJobId();
+			pid = jobs[i].getPid();
+			command = jobs[i].getCommand();
+			isStopped = jobs[i].getIsStopped();
+			start = jobs[i].getStart();
+			if (isStopped){
+				printf("[%d] %s : %d %d (Stopped)\n", job_id, command, pid, (int) difftime(*now, start));
+			}
+			else printf("[%d] %s : %d %d\n", job_id, command, pid, (int) difftime(*now, start));
+
+		}
+		
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "showpid")) 
@@ -124,7 +146,7 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 	/*************************************************/	
 	else // external command
 	{
- 		ExeExternal(args, cmdString);
+ 		ExeExternal(args, cmdString, true, jobs);
 	 	return 0;
 	}
 	if (illegal_cmd == true)
@@ -140,7 +162,7 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 // Parameters: external command arguments, external command string
 // Returns: void
 //**************************************************************************************
-void ExeExternal(char *args[MAX_ARG], char* cmdString)
+void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &jobs)
 {
 	int pID;
     	switch(pID = fork()) 
@@ -148,27 +170,40 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
     		case -1: 
 					// Add your code here (error)
 					
-					/* 
-					your code
-					*/
+					perror("smash error: fork failed");
+
 				break;
         	case 0 :
                 	// Child Process
                		setpgrp();
 					
 			        // Add your code here (execute an external command)
-					
-					/* 
-					your code
-					*/
+					set_foreground(getpid());
+					//cout<<args[0]<<" "<<args[1]<<endl;
+					//cout<<cmdString<<endl;
+					execv(args[0], args);
 				break;
 			
 			default:
                 	// Add your code here
-					
-					/* 
-					your code
-					*/
+					if (isFg){
+						//(foreground)
+						set_foreground(pID);
+						waitpid(pID, NULL, 0);
+						set_foreground(0);
+					}
+					else{
+						// (background)
+						int new_id;
+						time_t start = time(NULL);
+						if (!jobs.empty())
+						new_id = jobs[jobs.size()-1].getJobId() + 1;
+						else new_id = 1;
+
+						job new_job = job(new_id, pID, cmdString, false, start, 0);
+						jobs.push_back(new_job);
+
+					}
 				break;
 	}
 }
@@ -180,20 +215,30 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString)
 //**************************************************************************************
 int BgCmd(char* lineSize, vector<job> &jobs)
 {
-
-	char* Command;
+	int i = 0, num_arg = 0;
+	char* cmd;
 	const char* delimiters = " \t\n";
 	char *args[MAX_ARG];
+
+
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
-		lineSize[strlen(lineSize)-2] = '\0';
-		// Add your code here (execute a in the background)
-					
-		/* 
-		your code
-		*/
-		
+		lineSize[strlen(lineSize)-3]='\0';
+		cmd = strtok(lineSize, delimiters);
+		if (cmd == NULL)
+			return 0; 	
+
+		args[0] = cmd;
+		for (i=1; i<MAX_ARG; i++)
+		{
+			args[i] = strtok(NULL, delimiters); 
+			if (args[i] != NULL) 
+				num_arg++; 
+ 
+		}
+		ExeExternal(args, lineSize, false, jobs);
+		return 1;
 	}
-	return -1;
+	return 0;
 }
 

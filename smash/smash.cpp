@@ -29,7 +29,8 @@ char lineSize[MAX_LINE_SIZE];
 //**************************************************************************************
 int main(int argc, char *argv[])
 {
-    char cmdString[MAX_LINE_SIZE]; 	   
+    char cmdString[MAX_LINE_SIZE]; 	 
+
 
 	
 	//signal declaretions
@@ -40,7 +41,8 @@ int main(int argc, char *argv[])
 	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
 	//set your signal handlers here
 	/* add your code here */
-
+	signal(SIGINT, handler_cntlc);
+	signal(SIGTSTP, handler_cntlz);
 	/************************************/
 
 	/************************************/
@@ -60,7 +62,7 @@ int main(int argc, char *argv[])
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';
 					// background command	
-	 	if(!BgCmd(lineSize, jobs)) continue; 
+	 	if(BgCmd(lineSize, jobs)) continue; 
 					// built in commands
 		ExeCmd(jobs, lineSize, cmdString);
 		

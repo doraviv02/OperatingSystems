@@ -8,7 +8,8 @@
 #include <string.h>
 #include <signal.h>
 
-
-
+void set_foreground(int fg_pid);
+void handler_cntlc(int sig_num);
+void handler_cntlz(int sig_num);
 #endif
 
