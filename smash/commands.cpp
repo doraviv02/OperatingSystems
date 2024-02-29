@@ -248,11 +248,17 @@ int BgCmd(char* lineSize, vector<job> &jobs)
 	return 0;
 }
 
-
+//**************************************************************************************
+// function name: CleanJobs
+// Description: delete terminated jobs from job list (non-blocking)
+// Parameters: jobs vector
+// Returns: -1-waitpid error, else-number of deleted jobs
+//**************************************************************************************
 int CleanJobs(vector<job> &jobs) {
     //vector<job>::iterator ptr;
     int pid, cleaned = 0;
 
+    //non-blocking wait for all children
     while ((pid = waitpid(-1, NULL, WNOHANG)) != 0) {
         if (pid == -1) {
             perror("smash error: waitpid failed");
