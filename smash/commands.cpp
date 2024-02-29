@@ -40,7 +40,9 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
 // MORE IF STATEMENTS AS REQUIRED
 /*************************************************/
-	if (!strcmp(cmd, "cd") ) 
+    CleanJobs(jobs);
+
+    if (!strcmp(cmd, "cd") )
 	{
  		if (num_arg > 1) printf("smash error: cd: too many arguments\n");
 		else{
@@ -181,6 +183,8 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 					set_foreground(getpid());
 					//cout<<args[0]<<" "<<args[1]<<endl;
 					//cout<<cmdString<<endl;
+
+                    CleanJobs(jobs);
 					execv(args[0], args);
 				break;
 			
@@ -194,6 +198,8 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 					}
 					else{
 						// (background)
+                        CleanJobs(jobs);
+
 						int new_id;
 						time_t start = time(NULL);
 						if (!jobs.empty())
@@ -220,13 +226,12 @@ int BgCmd(char* lineSize, vector<job> &jobs)
 	const char* delimiters = " \t\n";
 	char *args[MAX_ARG];
 
-
 	if (lineSize[strlen(lineSize)-2] == '&')
 	{
-		lineSize[strlen(lineSize)-3]='\0';
+		lineSize[strlen(lineSize)-1]='\0';
 		cmd = strtok(lineSize, delimiters);
 		if (cmd == NULL)
-			return 0; 	
+			return 0;
 
 		args[0] = cmd;
 		for (i=1; i<MAX_ARG; i++)
@@ -236,9 +241,29 @@ int BgCmd(char* lineSize, vector<job> &jobs)
 				num_arg++; 
  
 		}
+        //printf("%s\nNum args = %d\n", lineSize, num_arg);
 		ExeExternal(args, lineSize, false, jobs);
 		return 1;
 	}
 	return 0;
+}
+
+
+int CleanJobs(vector<job> &jobs) {
+    //vector<job>::iterator ptr;
+    int pid, cleaned = 0;
+
+    while ((pid = waitpid(-1, NULL, WNOHANG)) != 0) {
+        if (pid == -1) {
+            perror("smash error: waitpid failed");
+            return -1;
+        }
+        for (auto it = jobs.begin(); it != jobs.end(); it++) {
+            jobs.erase(it);
+            cleaned++;
+            break;
+        }
+    }
+    return cleaned;
 }
 

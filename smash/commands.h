@@ -18,5 +18,6 @@ using namespace std;
 int BgCmd(char* lineSize, vector<job> &jobs);
 int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString);
 void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &jobs);
+int CleanJobs(vector<job> &jobs);
 #endif
 
