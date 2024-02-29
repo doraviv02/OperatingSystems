@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
 		lineSize[0]='\0';
 		cmdString[0]='\0';
 	}
-    return 0;
+	// deallocate jobs vector
+	jobs.clear();
 }
 

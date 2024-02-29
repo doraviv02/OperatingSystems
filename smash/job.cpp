@@ -1,12 +1,13 @@
 // Job Class implementation
 #include "job.h"
-
+#define MAX_LINE_SIZE 80
 
 
 job::job(int job_id, int pid, char* command, bool isStopped, time_t start, time_t end){
     this->job_id = job_id;
     this->pid = pid;
-    this->command = command;
+    this->command = new char[MAX_LINE_SIZE];
+    strcpy(this->command, command);
     this->isStopped = isStopped;
     this->start = start;
     this->end = end;
@@ -60,4 +61,8 @@ void job::setStart(time_t start){
 
 void job::setEnd(time_t end){
     this->end = end;
+}
+
+job::~job(){
+    delete[] this->command;
 }
