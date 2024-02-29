@@ -259,9 +259,11 @@ int CleanJobs(vector<job> &jobs) {
             return -1;
         }
         for (auto it = jobs.begin(); it != jobs.end(); it++) {
-            jobs.erase(it);
-            cleaned++;
-            break;
+            if (pid == it->getPid()) {
+                jobs.erase(it);
+                cleaned++;
+                break;
+            }
         }
     }
     return cleaned;
