@@ -55,14 +55,14 @@ int main(int argc, char *argv[])
 			exit (-1); 
 	L_Fg_Cmd[0] = '\0';
 	
-    	while (1)
-    	{
+    while (1) {
 	 	printf("smash > ");
 		fgets(lineSize, MAX_LINE_SIZE, stdin);
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';
-					// background command	
-	 	if(BgCmd(lineSize, jobs)) continue; 
+					// background command
+                    // TODO: ignore & for built-in commands
+	 	if(BgCmd(lineSize, jobs)) continue;
 					// built in commands
 		ExeCmd(jobs, lineSize, cmdString);
 		

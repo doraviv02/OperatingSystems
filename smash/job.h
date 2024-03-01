@@ -1,6 +1,8 @@
 // Job header file
 #include <time.h>
 #include <string.h>
+#include <vector>
+#include <sys/types.h>
 
 #ifndef JOB_H
 #define JOB_H
@@ -29,5 +31,7 @@ class job{
         void setStart(time_t start);
         void setEnd(time_t end);
 };
+
+extern std::vector<job> jobs;
 
 #endif
