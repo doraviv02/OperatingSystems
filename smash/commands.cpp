@@ -5,6 +5,7 @@
 #include "signals.h"
 #include <iostream>
 #include <linux/limits.h>
+#include <algorithm>
 #define DIFF_ARGS 2
 
 using namespace std;
@@ -58,6 +59,7 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 	/*************************************************/
 	else if (!strcmp(cmd, "jobs")) 
 	{
+        sort(jobs.begin(), jobs.end(), compareJobsByJobID);
 		int job_id, pid;
 		char* command;
 		bool isStopped;
@@ -88,7 +90,75 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 	/*************************************************/
 	else if (!strcmp(cmd, "fg")) 
 	{
-		
+        int jobID, selPID;
+        vector<job>::iterator it;
+
+		if (num_arg > 1) {
+            fprintf(stderr, "smash error: fg: invalid arguments\n");
+            return 1;
+        }
+        else if (num_arg == 1) {
+            int arg_len = strlen(args[1]);
+            for (int i = 0; i < arg_len; i++) {
+                if (!isdigit(args[1][i])) {
+                    fprintf(stderr, "smash error: fg: invalid arguments\n");
+                    return 1;
+                }
+            }
+
+            jobID = stoi(args[1]);
+            int foundJob = 0;
+            for (it = jobs.begin(); it != jobs.end(); it++) {
+                if (it->getJobId() == jobID) {
+                    foundJob = 1;
+                    break;
+                }
+            }
+            if (!foundJob) {
+                fprintf(stderr, "smash error: fg: job-id %d does not exist\n", jobID);
+                return 1;
+            }
+        }
+        else {
+            if (jobs.size() == 0) {
+                fprintf(stderr, "smash error: fg: jobs list is empty\n");
+                return 1;
+            }
+
+            int maxJobID = 0;
+            for (it = jobs.begin(); it != jobs.end(); it++) {
+                if (it->getJobId() > maxJobID) {
+                    maxJobID = it->getJobId();
+                }
+            }
+
+            for (it = jobs.begin(); it != jobs.end(); it++) {
+                if (it->getJobId() == maxJobID) {
+                    break;
+                }
+            }
+        }
+
+        selPID = it->getPid();
+        char *cmdString = it->getCommand();
+
+        set_foreground(selPID);
+        set_fg_cmdString(cmdString);
+        set_fg_jobID(jobID);
+
+        jobs.erase(it);
+
+        if (kill(selPID, SIGCONT) != 0) {
+            perror("smash error: kill failed");
+            return 1;
+        }
+
+        waitpid(selPID, NULL, WUNTRACED); //TODO: handle waitpid error
+
+        set_foreground(0);
+        char empty[MAX_LINE_SIZE] = {'\0'};
+        set_fg_cmdString(empty);
+
 	} 
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
@@ -343,5 +413,9 @@ int isBuiltIn(char* cmd) {
     }
     else
         return 1;
+}
+
+bool compareJobsByJobID(job& job1, job& job2) {
+    return job1.getJobId() < job2.getJobId();
 }
 

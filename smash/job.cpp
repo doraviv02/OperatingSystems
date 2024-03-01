@@ -30,6 +30,9 @@ job& job::operator=(const job& other) {
         this->pid = other.pid;
         this->command = new char[MAX_LINE_SIZE];
         strcpy(this->command, other.command);
+        this->isStopped = other.isStopped;
+        this->start = other.start;
+        this->end = other.end;
     }
     return *this;
 }

@@ -25,6 +25,7 @@ void ExeExternal(char* args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 int CleanJobs(vector<job> &jobs);
 int cmdParseType(char* lineSize);
 int isBuiltIn(char* cmd);
+bool compareJobsByJobID(job& job1, job& job2);
 
 #endif
 
