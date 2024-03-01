@@ -142,6 +142,8 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
         selPID = it->getPid();
         char *cmdString = it->getCommand();
 
+        printf("%s : %d\n", cmdString, selPID);
+
         set_foreground(selPID);
         set_fg_cmdString(cmdString);
         set_fg_jobID(jobID);
@@ -153,7 +155,10 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
             return 1;
         }
 
-        waitpid(selPID, NULL, WUNTRACED); //TODO: handle waitpid error
+        if (waitpid(selPID, NULL, WUNTRACED) == -1) {
+            perror("smash error: waitpid failed");
+            return 1;
+        }
 
         set_foreground(0);
         char empty[MAX_LINE_SIZE] = {'\0'};
@@ -163,7 +168,78 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
 	{
-  		
+        int jobID, selPID;
+        vector<job>::iterator it;
+
+        if (num_arg > 1) {
+            fprintf(stderr, "smash error: bg: invalid arguments\n");
+            return 1;
+        }
+        else if (num_arg == 1) {
+            int arg_len = strlen(args[1]);
+            for (int i = 0; i < arg_len; i++) {
+                if (!isdigit(args[1][i])) {
+                    fprintf(stderr, "smash error: bg: invalid arguments\n");
+                    return 1;
+                }
+            }
+
+            jobID = stoi(args[1]);
+            int foundJob = 0;
+            for (it = jobs.begin(); it != jobs.end(); it++) {
+                if (it->getJobId() == jobID) {
+
+                    if (!it->getIsStopped()) {
+                        fprintf(stderr, "smash error: bg: job-id %d is already running in the background\n", jobID);
+                        return 1;
+                    }
+
+                    foundJob = 1;
+                    break;
+                }
+            }
+            if (!foundJob) {
+                fprintf(stderr, "smash error: bg: job-id %d does not exist\n", jobID);
+                return 1;
+            }
+        }
+        else {
+            if (jobs.size() == 0) {
+                fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
+                return 1;
+            }
+
+            int maxJobID = 0;
+            for (it = jobs.begin(); it != jobs.end(); it++) {
+                if (it->getJobId() > maxJobID && it->getIsStopped()) {
+                    maxJobID = it->getJobId();
+                }
+            }
+
+            if (!maxJobID) {
+                fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
+                return 1;
+            }
+
+            for (it = jobs.begin(); it != jobs.end(); it++) {
+                if (it->getJobId() == maxJobID) {
+                    break;
+                }
+            }
+        }
+
+        selPID = it->getPid();
+        char *cmdString = it->getCommand();
+
+        printf("%s : %d\n", cmdString, selPID);
+
+        it->setIsStopped(false);
+
+        if (kill(selPID, SIGCONT) != 0) {
+            perror("smash error: kill failed");
+            return 1;
+        }
+
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "quit"))
