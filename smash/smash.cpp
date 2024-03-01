@@ -49,10 +49,10 @@ int main(int argc, char *argv[])
 
 
 	
-	L_Fg_Cmd =(char*)malloc(sizeof(char)*(MAX_LINE_SIZE+1));
-	if (L_Fg_Cmd == NULL) 
-			exit (-1); 
-	L_Fg_Cmd[0] = '\0';
+//	L_Fg_Cmd =(char*)malloc(sizeof(char)*(MAX_LINE_SIZE+1));
+//	if (L_Fg_Cmd == NULL)
+//			exit (-1);
+//	L_Fg_Cmd[0] = '\0';
 	
     while (1) {
         /* initialize for next line read*/
@@ -62,7 +62,8 @@ int main(int argc, char *argv[])
 	 	printf("smash > ");
 		fgets(lineSize, MAX_LINE_SIZE, stdin);
 		strcpy(cmdString, lineSize);    	
-		//cmdString[strlen(lineSize)-1]='\0';
+		cmdString[strlen(lineSize)-1]='\0';
+
         int cmd_type = cmdParseType(lineSize);
 
         switch (cmd_type) {
@@ -70,15 +71,20 @@ int main(int argc, char *argv[])
                 continue;
             case CMD_TYPE_BUILTIN_FG:
                 cmdParseArgs(lineSize, args);
+                printf("[DEBUG] cmdString: <%s>\n", cmdString);
                 //ExeCmd(jobs, lineSize, cmdString);
                 break;
             case CMD_TYPE_EXT_FG:
+
                 cmdParseArgs(lineSize, args);
-                //ExeExternal()
+                printf("[DEBUG] cmdString: <%s>\n", cmdString);
+                ExeExternal(args, cmdString, 1, jobs);
                 break;
             case CMD_TYPE_EXT_BG:
+
                 cmdParseArgs(lineSize, args);
-                //ExeExternal()
+                printf("[DEBUG] cmdString: <%s>\n", cmdString);
+                ExeExternal(args, cmdString, 0, jobs);
                 break;
         }
 

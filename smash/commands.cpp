@@ -180,7 +180,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
                		setpgrp();
 					
 			        // Add your code here (execute an external command)
-					set_foreground(getpid());
+					//set_foreground(getpid());
 					//cout<<args[0]<<" "<<args[1]<<endl;
 					//cout<<cmdString<<endl;
 
@@ -189,10 +189,12 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 				break;
 			
 			default:
+                    printf("[DEBUG] PID = %d\n", pID);
                 	// Add your code here
 					if (isFg){
 						//(foreground)
 						set_foreground(pID);
+                        set_fg_cmdString(cmdString);
 						waitpid(pID, NULL, 0);
 						set_foreground(0);
 					}
@@ -203,7 +205,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 						int new_id;
 						time_t start = time(NULL);
 						if (!jobs.empty())
-						new_id = jobs[jobs.size()-1].getJobId() + 1;
+						    new_id = jobs[jobs.size()-1].getJobId() + 1;
 						else new_id = 1;
 
 						job new_job = job(new_id, pID, cmdString, false, start, 0);
@@ -262,8 +264,13 @@ int CleanJobs(vector<job> &jobs) {
     //non-blocking wait for all children
     while ((pid = waitpid(-1, NULL, WNOHANG)) != 0) {
         if (pid == -1) {
-            perror("smash error: waitpid failed");
-            return -1;
+            if (errno == ECHILD) {
+                return 0;
+            }
+            else {
+                perror("smash error: waitpid failed");
+                return -1;
+            }
         }
         for (auto it = jobs.begin(); it != jobs.end(); it++) {
             if (pid == it->getPid()) {
