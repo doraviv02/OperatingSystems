@@ -17,6 +17,8 @@ class job{
         time_t end;
     public:
         job(int job_id, int pid, char* command, bool isStopped, time_t start, time_t end);
+        job(const job& other);
+        job& operator=(const job& other);
         ~job();
         int getJobId();
         int getPid();

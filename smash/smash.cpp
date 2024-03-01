@@ -47,12 +47,10 @@ int main(int argc, char *argv[])
 	/************************************/
 	// Init globals 
 
-
-	
-//	L_Fg_Cmd =(char*)malloc(sizeof(char)*(MAX_LINE_SIZE+1));
-//	if (L_Fg_Cmd == NULL)
-//			exit (-1);
-//	L_Fg_Cmd[0] = '\0';
+    set_foreground(0);
+    set_fg_jobID(0);
+    char empty[MAX_LINE_SIZE] = {'\0'};
+    set_fg_cmdString(empty);
 	
     while (1) {
         /* initialize for next line read*/
@@ -65,14 +63,14 @@ int main(int argc, char *argv[])
 		cmdString[strlen(lineSize)-1]='\0';
 
         int cmd_type = cmdParseType(lineSize);
-
+        int arg_num;
         switch (cmd_type) {
             case CMD_TYPE_ERR:
                 continue;
             case CMD_TYPE_BUILTIN_FG:
-                cmdParseArgs(lineSize, args);
+                arg_num = cmdParseArgs(lineSize, args);
                 printf("[DEBUG] cmdString: <%s>\n", cmdString);
-                //ExeCmd(jobs, lineSize, cmdString);
+                ExeCmd(jobs, args, arg_num);
                 break;
             case CMD_TYPE_EXT_FG:
 

@@ -4,6 +4,7 @@
 #include "job.h"
 #include "signals.h"
 #include <iostream>
+#include <linux/limits.h>
 #define DIFF_ARGS 2
 
 using namespace std;
@@ -13,28 +14,12 @@ using namespace std;
 // Parameters: pointer to jobs, command string
 // Returns: 0 - success,1 - failure
 //**************************************************************************************
-char old_pwd[MAX_LINE_SIZE] = "";
+char old_pwd[PATH_MAX] = "";
 
-int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
+int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 {
-	char* cmd; 
-	char* args[MAX_ARG];
-	char pwd[MAX_LINE_SIZE];
-	const char* delimiters = " \t\n";  
-	int i = 0, num_arg = 0;
-	bool illegal_cmd = false; // illegal command
-    cmd = strtok(lineSize, delimiters);
-	if (cmd == NULL)
-		return 0; 
-   	args[0] = cmd;
-	for (i=1; i<MAX_ARG; i++)
-	{
-		args[i] = strtok(NULL, delimiters); 
-		if (args[i] != NULL) 
-			num_arg++; 
- 
-	}
-	char new_pwd[MAX_LINE_SIZE];
+	char* cmd = args[0];
+    char cwd[PATH_MAX];
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
@@ -50,14 +35,16 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 				if (strlen(old_pwd) == 0)
 					printf("smash error: cd: OLDPWD not set\n");
 				else{
-					strcpy(new_pwd, getcwd(pwd, MAX_LINE_SIZE));
+
+                    getcwd(cwd, PATH_MAX);
+					//strcpy(new_pwd, getcwd(pwd, MAX_LINE_SIZE));
 					chdir(old_pwd);
-					strcpy(old_pwd, new_pwd);
+					strcpy(old_pwd, cwd);
 				}
 
 			}
 			else{
-				strcpy(old_pwd, getcwd(pwd, MAX_LINE_SIZE));
+                getcwd(old_pwd, PATH_MAX);
 				chdir(args[1]);
 			}
 		}
@@ -65,8 +52,8 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 	/*************************************************/
 	else if (!strcmp(cmd, "pwd")) 
 	{
-		getcwd(pwd, MAX_LINE_SIZE);
-		printf("%s\n", pwd);
+		getcwd(cwd, MAX_LINE_SIZE);
+		printf("%s\n", cwd);
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "jobs")) 
@@ -77,20 +64,19 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 		time_t start;
 		time_t* now = new time_t;
 		time(now);
-		
-		for (int i = 0; i < jobs.size(); i++)
-		{
-			job_id = jobs[i].getJobId();
-			pid = jobs[i].getPid();
-			command = jobs[i].getCommand();
-			isStopped = jobs[i].getIsStopped();
-			start = jobs[i].getStart();
-			if (isStopped){
-				printf("[%d] %s : %d %d (Stopped)\n", job_id, command, pid, (int) difftime(*now, start));
-			}
-			else printf("[%d] %s : %d %d\n", job_id, command, pid, (int) difftime(*now, start));
 
-		}
+        for (auto it = jobs.begin(); it != jobs.end(); it++) {
+            job_id = it->getJobId();
+            pid = it->getPid();
+            command = it->getCommand();
+            isStopped = it->getIsStopped();
+            start = it->getStart();
+
+            if (isStopped){
+                printf("[%d] %s : %d %d (Stopped)\n", job_id, command, pid, (int) difftime(*now, start));
+            }
+            else printf("[%d] %s : %d %d\n", job_id, command, pid, (int) difftime(*now, start));
+        }
 		
 	}
 	/*************************************************/
@@ -146,16 +132,16 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 		}
 	} 
 	/*************************************************/	
-	else // external command
-	{
- 		ExeExternal(args, cmdString, true, jobs);
-	 	return 0;
-	}
-	if (illegal_cmd == true)
-	{
-		printf("smash error: > \"%s\"\n", cmdString);
-		return 1;
-	}
+//	else // external command
+//	{
+// 		ExeExternal(args, cmdString, true, jobs);
+//	 	return 0;
+//	}
+//	if (illegal_cmd == true)
+//	{
+//		printf("smash error: > \"%s\"\n", cmdString);
+//		return 1;
+//	}
     return 0;
 }
 //**************************************************************************************
@@ -184,7 +170,7 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 					//cout<<args[0]<<" "<<args[1]<<endl;
 					//cout<<cmdString<<endl;
 
-                    CleanJobs(jobs);
+                    //CleanJobs(jobs);
 					execv(args[0], args);
 				break;
 			
@@ -200,17 +186,24 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 					}
 					else{
 						// (background)
+                        printf("[DEBUG] Cleaning stopped jobs...");
                         CleanJobs(jobs);
+                        printf("Done\n");
 
 						int new_id;
 						time_t start = time(NULL);
-						if (!jobs.empty())
-						    new_id = jobs[jobs.size()-1].getJobId() + 1;
-						else new_id = 1;
+						if (!jobs.empty()) {
+                            printf("[DEBUG] Jobs exist, generating new job ID...");
+                            new_id = jobs[jobs.size() - 1].getJobId() + 1;
+                            printf("%d\n", new_id);
+                        }
+                        else new_id = 1;
 
+                        printf("[DEBUG] Creating job for <%s>\n", cmdString);
 						job new_job = job(new_id, pID, cmdString, false, start, 0);
-						jobs.push_back(new_job);
-
+                        printf("[DEBUG] Job created for <%s>\n", new_job.getCommand());
+                        jobs.push_back(new_job);
+                        printf("[DEBUG] Job added\n");
 					}
 				break;
 	}
@@ -247,7 +240,7 @@ int cmdParseArgs(char* lineSize, char* args[MAX_ARG])
     printf("\n");
     //ExeExternal(args, lineSize, false, jobs);
 
-	return 0;
+	return num_arg;
 
 }
 

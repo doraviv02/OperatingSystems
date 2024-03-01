@@ -13,6 +13,27 @@ job::job(int job_id, int pid, char* command, bool isStopped, time_t start, time_
     this->end = end;
 }
 
+job::job(const job& other) {
+    this->job_id = other.job_id;
+    this->pid = other.pid;
+    this->command = new char[MAX_LINE_SIZE];
+    strcpy(this->command, other.command);
+    this->isStopped = other.isStopped;
+    this->start = other.start;
+    this->end = other.end;
+}
+
+job& job::operator=(const job& other) {
+    if (this != &other) {
+        delete[] this->command;
+        this->job_id = other.job_id;
+        this->pid = other.pid;
+        this->command = new char[MAX_LINE_SIZE];
+        strcpy(this->command, other.command);
+    }
+    return *this;
+}
+
 int job::getJobId(){
     return this->job_id;
 }

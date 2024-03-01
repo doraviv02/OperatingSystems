@@ -20,8 +20,8 @@
 using namespace std;
 
 int cmdParseArgs(char* lineSize, char* args[MAX_ARG]);
-int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString);
-void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &jobs);
+int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+void ExeExternal(char* args[MAX_ARG], char* cmdString, bool isFg, vector<job> &jobs);
 int CleanJobs(vector<job> &jobs);
 int cmdParseType(char* lineSize);
 int isBuiltIn(char* cmd);
