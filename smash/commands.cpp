@@ -245,7 +245,7 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
         it->setIsStopped(false);
 
         if (kill(selPID, SIGCONT) != 0) {
-            perror("smash error: kill failed\n");
+            perror("smash error: kill failed");
             return CMD_RETURN_ERR;
         }
 
@@ -265,7 +265,7 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
                 printf("[%d] %s - Sending SIGTERM... ", it->getJobId(), it->getCommand());
 
                 if (kill(pid, SIGTERM) != 0) {
-                    perror("smash error: kill failed\n");
+                    perror("smash error: kill failed");
                     return CMD_RETURN_ERR;
                 }
 
@@ -280,7 +280,7 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
                 if (difftime(now, start) >= SIGTERM_TIMEOUT) {
                     printf("(5 sec passed) Sending SIGKILL... ");
                     if (kill(pid, SIGKILL) != 0) {
-                        perror("smash error: kill failed\n");
+                        perror("smash error: kill failed");
                         return CMD_RETURN_ERR;
                     }
                 }
@@ -331,7 +331,7 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
             if (it->getJobId() == jobID) {
                 pid = it->getPid();
                 if (kill(pid, signum) != 0) {
-                    perror("smash error: kill failed\n");
+                    perror("smash error: kill failed");
                     return CMD_RETURN_ERR;
                 }
                 if (signum == SIGSTOP || signum == SIGTSTP) {
@@ -352,8 +352,16 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 		}
 		else{
 			FILE *f1 = fopen(args[1], "r");
+            if (f1 == NULL) {
+                perror("smash error: fopen failed");
+                return CMD_RETURN_ERR;
+            }
 			//TODO: figure out system call error
 			FILE *f2 = fopen(args[2], "r");
+            if (f2 == NULL) {
+                perror("smash error: fopen failed");
+                return CMD_RETURN_ERR;
+            }
 			// compare the two files character wise
 			int c1 = getc(f1), c2 = getc(f2);
 			
