@@ -15,6 +15,11 @@
 #define CMD_TYPE_EXT_BG 1
 #define CMD_TYPE_EXT_FG 2
 #define CMD_TYPE_ERR -1
+#define CMD_RETURN_ERR 1
+#define CMD_RETURN_OK 0
+#define CMD_RETURN_QUIT -1
+
+#define SIGTERM_TIMEOUT 5
 #include "job.h"
 
 using namespace std;

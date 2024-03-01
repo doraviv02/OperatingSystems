@@ -9,6 +9,7 @@
 #include <signal.h>
 
 extern int cur_fg_pid;
+extern int cur_fg_jobID;
 extern char cur_fg_cmdString[MAX_LINE_SIZE];
 
 void set_foreground(int fg_pid);

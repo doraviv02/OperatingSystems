@@ -63,14 +63,19 @@ int main(int argc, char *argv[])
 		cmdString[strlen(lineSize)-1]='\0';
 
         int cmd_type = cmdParseType(lineSize);
-        int arg_num;
+        int arg_num, ret;
         switch (cmd_type) {
             case CMD_TYPE_ERR:
                 continue;
             case CMD_TYPE_BUILTIN_FG:
                 arg_num = cmdParseArgs(lineSize, args);
                 printf("[DEBUG] cmdString: <%s>\n", cmdString);
-                ExeCmd(jobs, args, arg_num);
+                ret = ExeCmd(jobs, args, arg_num);
+
+                if (ret == CMD_RETURN_QUIT) {
+                    return 0;
+                }
+
                 break;
             case CMD_TYPE_EXT_FG:
 

@@ -83,6 +83,6 @@ void handler_cntlz(int sig_num){
         set_fg_cmdString(empty);
     }
      else {
-         printf("smash > ");
+         //printf("smash > ");
      }
 }
