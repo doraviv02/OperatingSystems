@@ -73,9 +73,9 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
             start = it->getStart();
 
             if (isStopped){
-                printf("[%d] %s : %d %d (Stopped)\n", job_id, command, pid, (int) difftime(*now, start));
+                printf("[%d] %s : %d %d secs (Stopped)\n", job_id, command, pid, (int) difftime(*now, start));
             }
-            else printf("[%d] %s : %d %d\n", job_id, command, pid, (int) difftime(*now, start));
+            else printf("[%d] %s : %d %d secs\n", job_id, command, pid, (int) difftime(*now, start));
         }
 		
 	}
@@ -181,7 +181,8 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 						//(foreground)
 						set_foreground(pID);
                         set_fg_cmdString(cmdString);
-						waitpid(pID, NULL, 0);
+						waitpid(pID, NULL, WUNTRACED);
+                        printf("[DEBUG] pid %d state change\n", pID);
 						set_foreground(0);
 					}
 					else{
@@ -208,12 +209,8 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 				break;
 	}
 }
-//**************************************************************************************
-// function name: BgCmd
-// Description: if command is in background, insert the command to jobs
-// Parameters: command string, pointer to jobs
-// Returns: 0- BG command -1- if not
-//**************************************************************************************
+
+
 int cmdParseArgs(char* lineSize, char* args[MAX_ARG])
 {
     printf("[DEBUG] Parsing args...\n");

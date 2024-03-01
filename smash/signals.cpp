@@ -64,7 +64,10 @@ void handler_cntlz(int sig_num){
 
         time_t start = time(NULL);
 
+        printf("[DEBUG] Creating job for <%s>\n", cur_fg_cmdString);
         job new_job = job(jobID, cur_fg_pid, cur_fg_cmdString, true, start, 0);
+        printf("[DEBUG] Created job for <%s>\n", new_job.getCommand());
+
         jobs.push_back(new_job);
 
 
