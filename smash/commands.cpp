@@ -23,7 +23,7 @@ int ExeCmd(vector<job> &jobs, char* lineSize, char* cmdString)
 	const char* delimiters = " \t\n";  
 	int i = 0, num_arg = 0;
 	bool illegal_cmd = false; // illegal command
-    	cmd = strtok(lineSize, delimiters);
+    cmd = strtok(lineSize, delimiters);
 	if (cmd == NULL)
 		return 0; 
    	args[0] = cmd;
@@ -219,33 +219,34 @@ void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &j
 // Parameters: command string, pointer to jobs
 // Returns: 0- BG command -1- if not
 //**************************************************************************************
-int BgCmd(char* lineSize, vector<job> &jobs)
+int cmdParseArgs(char* lineSize, char* args[MAX_ARG])
 {
+    printf("[DEBUG] Parsing args...\n");
 	int i = 0, num_arg = 0;
-	char* cmd;
 	const char* delimiters = " \t\n";
-	char *args[MAX_ARG];
+    char* cmd;
 
-	if (lineSize[strlen(lineSize)-2] == '&')
-	{
-		lineSize[strlen(lineSize)-1]='\0';
-		cmd = strtok(lineSize, delimiters);
-		if (cmd == NULL)
-			return 0;
+    cmd = strtok(lineSize, delimiters);
+    if (cmd == NULL)
+        return -1;
 
-		args[0] = cmd;
-		for (i=1; i<MAX_ARG; i++)
-		{
-			args[i] = strtok(NULL, delimiters); 
-			if (args[i] != NULL) 
-				num_arg++; 
- 
-		}
-        //printf("%s\nNum args = %d\n", lineSize, num_arg);
-		ExeExternal(args, lineSize, false, jobs);
-		return 1;
-	}
+    args[0] = cmd;
+    for (i=1; i<MAX_ARG; i++)
+    {
+        args[i] = strtok(NULL, delimiters);
+        if (args[i] != NULL)
+            num_arg++;
+
+    }
+
+    printf("[DEBUG] Num args = %d\n", num_arg);
+    i = 0;
+    while (args[i] != NULL) printf("<%s> ", args[i++]);
+    printf("\n");
+    //ExeExternal(args, lineSize, false, jobs);
+
 	return 0;
+
 }
 
 //**************************************************************************************
@@ -273,5 +274,77 @@ int CleanJobs(vector<job> &jobs) {
         }
     }
     return cleaned;
+}
+
+int cmdParseType(char* lineSize) {
+    char* cmd;
+    const char* delimiters = " \t\n";
+    int i = strlen(lineSize) - 1;
+    printf("[DEBUG] Last index = %d\n", i);
+    int bgtoken = 0;
+
+    while (i >= 0 && isspace(lineSize[i])) i--;
+    if (i >= 0 && lineSize[i] == '&') {
+        printf("[DEBUG] Found &\n");
+        lineSize[i] = '\0';
+        bgtoken = 1;
+    }
+    else if (i < 0) {
+        return CMD_TYPE_ERR;
+    }
+    else {
+        lineSize[i+1] = '\0';
+    }
+
+    printf("[DEBUG] Truncuated full command: %s\n", lineSize);
+
+    int start_index = strspn(lineSize, delimiters);
+    printf("[DEBUG] start_index = %d\n", start_index);
+    int cmd_len = strcspn(lineSize + start_index, delimiters);
+    printf("[DEBUG] cmd_len = %d\n", cmd_len);
+
+    cmd = (char*)malloc(cmd_len + 1);
+    strncpy(cmd, lineSize + start_index, cmd_len);
+    cmd[cmd_len] = '\0';
+
+//    if (cmd == NULL)
+//        return CMD_TYPE_ERR;
+
+    printf("Command: %s\n", cmd);
+
+    if (isBuiltIn(cmd)) {
+        printf("[DEBUG] Built-in command\n");
+        free(cmd);
+        return CMD_TYPE_BUILTIN_FG;
+    }
+    else {
+        printf("[DEBUG] External command ");
+        free(cmd);
+
+        if (bgtoken) {
+            printf("BG\n");
+            return CMD_TYPE_EXT_BG;
+        }
+        else {
+            printf("FG\n");
+            return CMD_TYPE_EXT_FG;
+        }
+    }
+}
+
+int isBuiltIn(char* cmd) {
+    if (strcmp(cmd, "showpid") != 0 &&
+        strcmp(cmd, "pwd") != 0 &&
+        strcmp(cmd, "cd") != 0 &&
+        strcmp(cmd, "jobs") != 0 &&
+        strcmp(cmd, "kill") != 0 &&
+        strcmp(cmd, "fg") != 0 &&
+        strcmp(cmd, "bg") != 0 &&
+        strcmp(cmd, "quit") != 0 &&
+        strcmp(cmd, "diff") != 0) {
+        return 0;
+    }
+    else
+        return 1;
 }
 

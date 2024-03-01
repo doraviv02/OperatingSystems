@@ -13,8 +13,7 @@ main file. This file contains the main function of smash
 #include "commands.h"
 #include "signals.h"
 
-#define MAX_LINE_SIZE 80
-#define MAXARGS 20
+
 #define MAX_JOBS 100
 
 using namespace std;
@@ -30,7 +29,7 @@ char lineSize[MAX_LINE_SIZE];
 int main(int argc, char *argv[])
 {
     char cmdString[MAX_LINE_SIZE]; 	 
-
+    char* args[MAX_ARG];
 
 	
 	//signal declaretions
@@ -56,19 +55,35 @@ int main(int argc, char *argv[])
 	L_Fg_Cmd[0] = '\0';
 	
     while (1) {
+        /* initialize for next line read*/
+        lineSize[0]='\0';
+        cmdString[0]='\0';
+
 	 	printf("smash > ");
 		fgets(lineSize, MAX_LINE_SIZE, stdin);
 		strcpy(cmdString, lineSize);    	
-		cmdString[strlen(lineSize)-1]='\0';
-					// background command
-                    // TODO: ignore & for built-in commands
-	 	if(BgCmd(lineSize, jobs)) continue;
-					// built in commands
-		ExeCmd(jobs, lineSize, cmdString);
-		
-		/* initialize for next line read*/
-		lineSize[0]='\0';
-		cmdString[0]='\0';
+		//cmdString[strlen(lineSize)-1]='\0';
+        int cmd_type = cmdParseType(lineSize);
+
+        switch (cmd_type) {
+            case CMD_TYPE_ERR:
+                continue;
+            case CMD_TYPE_BUILTIN_FG:
+                cmdParseArgs(lineSize, args);
+                //ExeCmd(jobs, lineSize, cmdString);
+                break;
+            case CMD_TYPE_EXT_FG:
+                cmdParseArgs(lineSize, args);
+                //ExeExternal()
+                break;
+            case CMD_TYPE_EXT_BG:
+                cmdParseArgs(lineSize, args);
+                //ExeExternal()
+                break;
+        }
+
+	 				// built in commands
+		//ExeCmd(jobs, lineSize, cmdString);
 	}
 	// deallocate jobs vector
 	jobs.clear();

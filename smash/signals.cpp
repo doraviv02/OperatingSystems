@@ -36,14 +36,14 @@ void handler_cntlz(int sig_num){
         CleanJobs(jobs);
 
         //TODO: Add job, handle cmdString for foreground process
-//        int new_id;
-//        time_t start = time(NULL);
-//        if (!jobs.empty())
-//            new_id = jobs[jobs.size()-1].getJobId() + 1;
-//        else new_id = 1;
-//
-//        job new_job = job(new_id, cur_fg_pid, cmdString, true, start, 0);
-//        jobs.push_back(new_job);
+        int new_id;
+        time_t start = time(NULL);
+        if (!jobs.empty())
+            new_id = jobs[jobs.size()-1].getJobId() + 1;
+        else new_id = 1;
+
+        job new_job = job(new_id, cur_fg_pid, cmdString, true, start, 0);
+        jobs.push_back(new_job);
 
         if (kill(cur_fg_pid, SIGSTOP) != 0) {
             perror("smash error: kill failed");
