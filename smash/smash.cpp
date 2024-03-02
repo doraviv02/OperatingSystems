@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
                 continue;
             case CMD_TYPE_BUILTIN_FG:
                 arg_num = cmdParseArgs(lineSize, args);
-                printf("[DEBUG] cmdString: <%s>\n", cmdString);
+                //printf("[DEBUG] cmdString: <%s>\n", cmdString);
                 ret = ExeCmd(jobs, args, arg_num);
 
                 if (ret == CMD_RETURN_QUIT) {
@@ -80,13 +80,13 @@ int main(int argc, char *argv[])
             case CMD_TYPE_EXT_FG:
 
                 cmdParseArgs(lineSize, args);
-                printf("[DEBUG] cmdString: <%s>\n", cmdString);
+                //printf("[DEBUG] cmdString: <%s>\n", cmdString);
                 ExeExternal(args, cmdString, 1, jobs);
                 break;
             case CMD_TYPE_EXT_BG:
 
                 cmdParseArgs(lineSize, args);
-                printf("[DEBUG] cmdString: <%s>\n", cmdString);
+                //printf("[DEBUG] cmdString: <%s>\n", cmdString);
                 ExeExternal(args, cmdString, 0, jobs);
                 break;
         }

@@ -32,5 +32,15 @@ int cmdParseType(char* lineSize);
 int isBuiltIn(char* cmd);
 bool compareJobsByJobID(job& job1, job& job2);
 
+int ExeCmd_showpid(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_cd(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_pwd(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_jobs(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_kill(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_fg(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_bg(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_quit(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+int ExeCmd_diff(vector<job> &jobs, char* args[MAX_ARG], int num_arg);
+
 #endif
 

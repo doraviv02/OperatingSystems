@@ -39,7 +39,7 @@ void handler_cntlc(int sig_num){
        set_fg_cmdString(empty);
      }
      else {
-         printf("smash > ");
+         //printf("smash > ");
      }
 }
 
@@ -48,7 +48,7 @@ void handler_cntlc(int sig_num){
 void handler_cntlz(int sig_num){
      printf("smash: caught ctrl-Z\n");
      if (cur_fg_pid != 0){
-        printf("[DEBUG] Foreground process found!\n");
+        //printf("[DEBUG] Foreground process found!\n");
 
         CleanJobs(jobs);
 
@@ -64,9 +64,9 @@ void handler_cntlz(int sig_num){
 
         time_t start = time(NULL);
 
-        printf("[DEBUG] Creating job for <%s>\n", cur_fg_cmdString);
+        //printf("[DEBUG] Creating job for <%s>\n", cur_fg_cmdString);
         job new_job = job(jobID, cur_fg_pid, cur_fg_cmdString, true, start, 0);
-        printf("[DEBUG] Created job for <%s>\n", new_job.getCommand());
+        //printf("[DEBUG] Created job for <%s>\n", new_job.getCommand());
 
         jobs.push_back(new_job);
 

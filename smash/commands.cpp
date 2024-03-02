@@ -12,15 +12,15 @@ using namespace std;
 //********************************************
 // function name: ExeCmd
 // Description: interperts and executes built-in commands
-// Parameters: pointer to jobs, command string
-// Returns: 0 - success,1 - failure
+// Parameters: reference to jobs, argument array, command string
+// Returns: 0 - success, 1 - failure, -1 - quit smash
 //**************************************************************************************
 char old_pwd[PATH_MAX] = "";
+char cwd[PATH_MAX];
 
 int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 {
 	char* cmd = args[0];
-    char cwd[PATH_MAX];
 /*************************************************/
 // Built in Commands PLEASE NOTE NOT ALL REQUIRED
 // ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
@@ -30,367 +30,416 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 
     if (!strcmp(cmd, "cd") )
 	{
- 		if (num_arg > 1) printf("smash error: cd: too many arguments\n");
-		else{
-			if(strcmp(args[1], "-") == 0){
-				if (strlen(old_pwd) == 0)
-					printf("smash error: cd: OLDPWD not set\n");
-				else{
-
-                    if (getcwd(cwd, PATH_MAX) == NULL) {
-                        perror("smash error: getcwd failed");
-                        return CMD_RETURN_ERR;
-                    }
-
-					if (chdir(old_pwd) == -1) {
-                        perror("smash error: chdir failed");
-                        return CMD_RETURN_ERR;
-                    }
-					strcpy(old_pwd, cwd);
-				}
-
-			}
-			else{
-                getcwd(old_pwd, PATH_MAX);
-				chdir(args[1]);
-			}
-		}
+ 		return ExeCmd_cd(jobs, args, num_arg);
 	} 
 	/*************************************************/
 	else if (!strcmp(cmd, "pwd")) 
 	{
-		if (getcwd(cwd, MAX_LINE_SIZE) == NULL) {
-            perror("smash error: getcwd failed");
-            return CMD_RETURN_ERR;
-        }
-		printf("%s\n", cwd);
+		return ExeCmd_pwd(jobs, args, num_arg);
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "jobs")) 
 	{
-        sort(jobs.begin(), jobs.end(), compareJobsByJobID);
-		int job_id, pid;
-		char* command;
-		bool isStopped;
-		time_t start;
-		time_t* now = new time_t;
-		time(now);
-
-        for (auto it = jobs.begin(); it != jobs.end(); it++) {
-            job_id = it->getJobId();
-            pid = it->getPid();
-            command = it->getCommand();
-            isStopped = it->getIsStopped();
-            start = it->getStart();
-
-            if (isStopped){
-                printf("[%d] %s : %d %d secs (Stopped)\n", job_id, command, pid, (int) difftime(*now, start));
-            }
-            else printf("[%d] %s : %d %d secs\n", job_id, command, pid, (int) difftime(*now, start));
-        }
-		
+        return ExeCmd_jobs(jobs, args, num_arg);
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "showpid")) 
 	{
-		pid_t pid = getpid();
-		printf("smash pid is %d\n", pid);
+		return ExeCmd_showpid(jobs, args, num_arg);
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "fg")) 
 	{
-        int jobID, selPID;
-        vector<job>::iterator it;
-
-		if (num_arg > 1) {
-            fprintf(stderr, "smash error: fg: invalid arguments\n");
-            return CMD_RETURN_ERR;
-        }
-        else if (num_arg == 1) {
-            int arg_len = strlen(args[1]);
-            for (int i = 0; i < arg_len; i++) {
-                if (!isdigit(args[1][i])) {
-                    fprintf(stderr, "smash error: fg: invalid arguments\n");
-                    return CMD_RETURN_ERR;
-                }
-            }
-
-            jobID = stoi(args[1]);
-            int foundJob = 0;
-            for (it = jobs.begin(); it != jobs.end(); it++) {
-                if (it->getJobId() == jobID) {
-                    foundJob = 1;
-                    break;
-                }
-            }
-            if (!foundJob) {
-                fprintf(stderr, "smash error: fg: job-id %d does not exist\n", jobID);
-                return CMD_RETURN_ERR;
-            }
-        }
-        else {
-            if (jobs.size() == 0) {
-                fprintf(stderr, "smash error: fg: jobs list is empty\n");
-                return CMD_RETURN_ERR;
-            }
-
-            int maxJobID = 0;
-            for (it = jobs.begin(); it != jobs.end(); it++) {
-                if (it->getJobId() > maxJobID) {
-                    maxJobID = it->getJobId();
-                }
-            }
-
-            for (it = jobs.begin(); it != jobs.end(); it++) {
-                if (it->getJobId() == maxJobID) {
-                    break;
-                }
-            }
-        }
-
-        selPID = it->getPid();
-        char *cmdString = it->getCommand();
-
-        printf("%s : %d\n", cmdString, selPID);
-
-        set_foreground(selPID);
-        set_fg_cmdString(cmdString);
-        set_fg_jobID(jobID);
-
-        jobs.erase(it);
-
-        if (kill(selPID, SIGCONT) != 0) {
-            perror("smash error: kill failed");
-            return CMD_RETURN_ERR;
-        }
-
-        if (waitpid(selPID, NULL, WUNTRACED) == -1) {
-            perror("smash error: waitpid failed");
-            return CMD_RETURN_ERR;
-        }
-
-        set_foreground(0);
-        char empty[MAX_LINE_SIZE] = {'\0'};
-        set_fg_cmdString(empty);
-
+        return ExeCmd_fg(jobs, args, num_arg);
 	} 
 	/*************************************************/
 	else if (!strcmp(cmd, "bg")) 
 	{
-        int jobID, selPID;
-        vector<job>::iterator it;
-
-        if (num_arg > 1) {
-            fprintf(stderr, "smash error: bg: invalid arguments\n");
-            return CMD_RETURN_ERR;
-        }
-        else if (num_arg == 1) {
-            int arg_len = strlen(args[1]);
-            for (int i = 0; i < arg_len; i++) {
-                if (!isdigit(args[1][i])) {
-                    fprintf(stderr, "smash error: bg: invalid arguments\n");
-                    return CMD_RETURN_ERR;
-                }
-            }
-
-            jobID = stoi(args[1]);
-            int foundJob = 0;
-            for (it = jobs.begin(); it != jobs.end(); it++) {
-                if (it->getJobId() == jobID) {
-
-                    if (!it->getIsStopped()) {
-                        fprintf(stderr, "smash error: bg: job-id %d is already running in the background\n", jobID);
-                        return CMD_RETURN_ERR;
-                    }
-
-                    foundJob = 1;
-                    break;
-                }
-            }
-            if (!foundJob) {
-                fprintf(stderr, "smash error: bg: job-id %d does not exist\n", jobID);
-                return CMD_RETURN_ERR;
-            }
-        }
-        else {
-            if (jobs.size() == 0) {
-                fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
-                return CMD_RETURN_ERR;
-            }
-
-            int maxJobID = 0;
-            for (it = jobs.begin(); it != jobs.end(); it++) {
-                if (it->getJobId() > maxJobID && it->getIsStopped()) {
-                    maxJobID = it->getJobId();
-                }
-            }
-
-            if (!maxJobID) {
-                fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
-                return CMD_RETURN_ERR;
-            }
-
-            for (it = jobs.begin(); it != jobs.end(); it++) {
-                if (it->getJobId() == maxJobID) {
-                    break;
-                }
-            }
-        }
-
-        selPID = it->getPid();
-        char *cmdString = it->getCommand();
-
-        printf("%s : %d\n", cmdString, selPID);
-
-        it->setIsStopped(false);
-
-        if (kill(selPID, SIGCONT) != 0) {
-            perror("smash error: kill failed");
-            return CMD_RETURN_ERR;
-        }
+        return ExeCmd_bg(jobs, args, num_arg);
 
 	}
 	/*************************************************/
 	else if (!strcmp(cmd, "quit"))
 	{
-        if (num_arg == 0 || jobs.size() == 0) return CMD_RETURN_QUIT;
-
-        if (!strcmp(args[1], "kill")) {
-            sort(jobs.begin(), jobs.end(), compareJobsByJobID);
-
-            vector<job>::iterator it;
-            for (it = jobs.begin(); it != jobs.end(); ) {
-                int pid = it->getPid();
-
-                printf("[%d] %s - Sending SIGTERM... ", it->getJobId(), it->getCommand());
-
-                if (kill(pid, SIGTERM) != 0) {
-                    perror("smash error: kill failed");
-                    return CMD_RETURN_ERR;
-                }
-
-                time_t start = time(NULL);
-                time_t now = time(NULL);
-                while (waitpid(pid, NULL, WNOHANG) == 0 && difftime(now, start) < SIGTERM_TIMEOUT) {
-                    now = time(NULL);
-
-                    sleep(1);
-                }
-
-                if (difftime(now, start) >= SIGTERM_TIMEOUT) {
-                    printf("(5 sec passed) Sending SIGKILL... ");
-                    if (kill(pid, SIGKILL) != 0) {
-                        perror("smash error: kill failed");
-                        return CMD_RETURN_ERR;
-                    }
-                }
-
-                printf("Done.\n");
-
-                it = jobs.erase(it);
-            }
-
-            return CMD_RETURN_QUIT;
-        }
+        return ExeCmd_quit(jobs, args, num_arg);
 	} 
 	/*************************************************/
 	else if (!strcmp(cmd, "kill"))
 	{
-   		if (num_arg != 2 || args[1][0] != '-') {
-            fprintf(stderr, "smash error: kill: invalid arguments\n");
-            return CMD_RETURN_ERR;
-        }
-
-        int arg_len = strlen(args[1]);
-        for (int i = 1; i < arg_len; i++) {
-            if (!isdigit(args[1][i])) {
-                fprintf(stderr, "smash error: kill: invalid arguments\n");
-                return CMD_RETURN_ERR;
-            }
-        }
-
-        arg_len = strlen(args[2]);
-        for (int i = 0; i < arg_len; i++) {
-            if (!isdigit(args[2][i])) {
-                fprintf(stderr, "smash error: kill: invalid arguments\n");
-                return CMD_RETURN_ERR;
-            }
-        }
-
-        int signum, jobID, pid;
-        sscanf(args[1], "-%d", &signum);
-        sscanf(args[2], "%d", &jobID);
-
-        printf("[DEBUG] signum = %d jobID = %d\n", signum, jobID);
-
-        if (jobs.size() == 0) {
-            fprintf(stderr, "smash error: kill: job-id %d does not exist\n", jobID);
-            return CMD_RETURN_ERR;
-        }
-        for (auto it = jobs.begin(); it != jobs.end(); it++) {
-            if (it->getJobId() == jobID) {
-                pid = it->getPid();
-                if (kill(pid, signum) != 0) {
-                    perror("smash error: kill failed");
-                    return CMD_RETURN_ERR;
-                }
-                if (signum == SIGSTOP || signum == SIGTSTP) {
-                    it->setIsStopped(true);
-                }
-                return CMD_RETURN_OK;
-            }
-        }
-        fprintf(stderr, "smash error: kill: job-id %d does not exist\n", jobID);
-        return CMD_RETURN_ERR;
+   		return ExeCmd_kill(jobs, args, num_arg);
 
 	} 
 	/*************************************************/	
 	else if (!strcmp(cmd, "diff"))
 	{
-   		if (num_arg != DIFF_ARGS){
-			fprintf(stderr, "smash error: diff: invalid arguments\n");
-		}
-		else{
-			FILE *f1 = fopen(args[1], "r");
-            if (f1 == NULL) {
-                perror("smash error: fopen failed");
-                return CMD_RETURN_ERR;
-            }
-			//TODO: figure out system call error
-			FILE *f2 = fopen(args[2], "r");
-            if (f2 == NULL) {
-                perror("smash error: fopen failed");
-                return CMD_RETURN_ERR;
-            }
-			// compare the two files character wise
-			int c1 = getc(f1), c2 = getc(f2);
-			
-		
-			while (c1 == c2 && c1 != EOF && c2 != EOF){
-				c1 = getc(f1);
-				c2 = getc(f2);
-			}
-			if (c1 == EOF && c2 == EOF){
-				printf("0\n");
-			}
-			else{
-				printf("1\n");
-			}
-		}
+   		return ExeCmd_diff(jobs, args, num_arg);
 	} 
 	/*************************************************/	
-//	else // external command
-//	{
-// 		ExeExternal(args, cmdString, true, jobs);
-//	 	return 0;
-//	}
-//	if (illegal_cmd == true)
-//	{
-//		printf("smash error: > \"%s\"\n", cmdString);
-//		return 1;
-//	}
+
     return 0;
 }
+
+int ExeCmd_showpid(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    pid_t pid = getpid();
+
+    printf("smash pid is %d\n", pid);
+
+    return CMD_RETURN_OK;
+}
+
+int ExeCmd_cd(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    if (num_arg > 1) {
+        printf("smash error: cd: too many arguments\n");
+        return CMD_RETURN_ERR;
+    }
+    else{
+        if(strcmp(args[1], "-") == 0){
+            if (strlen(old_pwd) == 0) {
+                printf("smash error: cd: OLDPWD not set\n");
+                return CMD_RETURN_ERR;
+            }
+            else{
+
+                if (getcwd(cwd, PATH_MAX) == NULL) {
+                    perror("smash error: getcwd failed");
+                    return CMD_RETURN_ERR;
+                }
+
+                if (chdir(old_pwd) == -1) {
+                    perror("smash error: chdir failed");
+                    return CMD_RETURN_ERR;
+                }
+                strcpy(old_pwd, cwd);
+                return CMD_RETURN_OK;
+            }
+        }
+        else{
+            getcwd(old_pwd, PATH_MAX);
+            chdir(args[1]);
+            return CMD_RETURN_OK;
+        }
+    }
+}
+
+int ExeCmd_pwd(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    if (getcwd(cwd, MAX_LINE_SIZE) == NULL) {
+        perror("smash error: getcwd failed");
+        return CMD_RETURN_ERR;
+    }
+    printf("%s\n", cwd);
+    return CMD_RETURN_OK;
+}
+
+int ExeCmd_jobs(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    sort(jobs.begin(), jobs.end(), compareJobsByJobID);
+    int job_id, pid;
+    char* command;
+    bool isStopped;
+    time_t start;
+    time_t* now = new time_t;
+    time(now);
+
+    for (auto it = jobs.begin(); it != jobs.end(); it++) {
+        job_id = it->getJobId();
+        pid = it->getPid();
+        command = it->getCommand();
+        isStopped = it->getIsStopped();
+        start = it->getStart();
+
+        if (isStopped){
+            printf("[%d] %s : %d %d secs (Stopped)\n", job_id, command, pid, (int) difftime(*now, start));
+        }
+        else printf("[%d] %s : %d %d secs\n", job_id, command, pid, (int) difftime(*now, start));
+    }
+    return CMD_RETURN_OK;
+}
+
+int ExeCmd_kill(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    if (num_arg != 2 || args[1][0] != '-') {
+        fprintf(stderr, "smash error: kill: invalid arguments\n");
+        return CMD_RETURN_ERR;
+    }
+
+    int arg_len = strlen(args[1]);
+    for (int i = 1; i < arg_len; i++) {
+        if (!isdigit(args[1][i])) {
+            fprintf(stderr, "smash error: kill: invalid arguments\n");
+            return CMD_RETURN_ERR;
+        }
+    }
+
+    arg_len = strlen(args[2]);
+    for (int i = 0; i < arg_len; i++) {
+        if (!isdigit(args[2][i])) {
+            fprintf(stderr, "smash error: kill: invalid arguments\n");
+            return CMD_RETURN_ERR;
+        }
+    }
+
+    int signum, jobID, pid;
+    sscanf(args[1], "-%d", &signum);
+    sscanf(args[2], "%d", &jobID);
+
+    //printf("[DEBUG] signum = %d jobID = %d\n", signum, jobID);
+
+    if (jobs.size() == 0) {
+        fprintf(stderr, "smash error: kill: job-id %d does not exist\n", jobID);
+        return CMD_RETURN_ERR;
+    }
+    for (auto it = jobs.begin(); it != jobs.end(); it++) {
+        if (it->getJobId() == jobID) {
+            pid = it->getPid();
+            if (kill(pid, signum) != 0) {
+                perror("smash error: kill failed");
+                return CMD_RETURN_ERR;
+            }
+            if (signum == SIGSTOP || signum == SIGTSTP) {
+                it->setIsStopped(true);
+            }
+            return CMD_RETURN_OK;
+        }
+    }
+    fprintf(stderr, "smash error: kill: job-id %d does not exist\n", jobID);
+    return CMD_RETURN_ERR;
+}
+
+int ExeCmd_fg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    int jobID, selPID;
+    vector<job>::iterator it;
+
+    if (num_arg > 1) {
+        fprintf(stderr, "smash error: fg: invalid arguments\n");
+        return CMD_RETURN_ERR;
+    }
+    else if (num_arg == 1) {
+        int arg_len = strlen(args[1]);
+        for (int i = 0; i < arg_len; i++) {
+            if (!isdigit(args[1][i])) {
+                fprintf(stderr, "smash error: fg: invalid arguments\n");
+                return CMD_RETURN_ERR;
+            }
+        }
+
+        jobID = stoi(args[1]);
+        int foundJob = 0;
+        for (it = jobs.begin(); it != jobs.end(); it++) {
+            if (it->getJobId() == jobID) {
+                foundJob = 1;
+                break;
+            }
+        }
+        if (!foundJob) {
+            fprintf(stderr, "smash error: fg: job-id %d does not exist\n", jobID);
+            return CMD_RETURN_ERR;
+        }
+    }
+    else {
+        if (jobs.size() == 0) {
+            fprintf(stderr, "smash error: fg: jobs list is empty\n");
+            return CMD_RETURN_ERR;
+        }
+
+        int maxJobID = 0;
+        for (it = jobs.begin(); it != jobs.end(); it++) {
+            if (it->getJobId() > maxJobID) {
+                maxJobID = it->getJobId();
+            }
+        }
+
+        for (it = jobs.begin(); it != jobs.end(); it++) {
+            if (it->getJobId() == maxJobID) {
+                break;
+            }
+        }
+    }
+
+    selPID = it->getPid();
+    char *cmdString = it->getCommand();
+
+    printf("%s : %d\n", cmdString, selPID);
+
+    set_foreground(selPID);
+    set_fg_cmdString(cmdString);
+    set_fg_jobID(jobID);
+
+    jobs.erase(it);
+
+    if (kill(selPID, SIGCONT) != 0) {
+        perror("smash error: kill failed");
+        return CMD_RETURN_ERR;
+    }
+
+    if (waitpid(selPID, NULL, WUNTRACED) == -1) {
+        perror("smash error: waitpid failed");
+        return CMD_RETURN_ERR;
+    }
+
+    set_foreground(0);
+    char empty[MAX_LINE_SIZE] = {'\0'};
+    set_fg_cmdString(empty);
+
+    return CMD_RETURN_OK;
+}
+
+int ExeCmd_bg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    int jobID, selPID;
+    vector<job>::iterator it;
+
+    if (num_arg > 1) {
+        fprintf(stderr, "smash error: bg: invalid arguments\n");
+        return CMD_RETURN_ERR;
+    }
+    else if (num_arg == 1) {
+        int arg_len = strlen(args[1]);
+        for (int i = 0; i < arg_len; i++) {
+            if (!isdigit(args[1][i])) {
+                fprintf(stderr, "smash error: bg: invalid arguments\n");
+                return CMD_RETURN_ERR;
+            }
+        }
+
+        jobID = stoi(args[1]);
+        int foundJob = 0;
+        for (it = jobs.begin(); it != jobs.end(); it++) {
+            if (it->getJobId() == jobID) {
+
+                if (!it->getIsStopped()) {
+                    fprintf(stderr, "smash error: bg: job-id %d is already running in the background\n", jobID);
+                    return CMD_RETURN_ERR;
+                }
+
+                foundJob = 1;
+                break;
+            }
+        }
+        if (!foundJob) {
+            fprintf(stderr, "smash error: bg: job-id %d does not exist\n", jobID);
+            return CMD_RETURN_ERR;
+        }
+    }
+    else {
+        if (jobs.size() == 0) {
+            fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
+            return CMD_RETURN_ERR;
+        }
+
+        int maxJobID = 0;
+        for (it = jobs.begin(); it != jobs.end(); it++) {
+            if (it->getJobId() > maxJobID && it->getIsStopped()) {
+                maxJobID = it->getJobId();
+            }
+        }
+
+        if (!maxJobID) {
+            fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
+            return CMD_RETURN_ERR;
+        }
+
+        for (it = jobs.begin(); it != jobs.end(); it++) {
+            if (it->getJobId() == maxJobID) {
+                break;
+            }
+        }
+    }
+
+    selPID = it->getPid();
+    char *cmdString = it->getCommand();
+
+    printf("%s : %d\n", cmdString, selPID);
+
+    it->setIsStopped(false);
+
+    if (kill(selPID, SIGCONT) != 0) {
+        perror("smash error: kill failed");
+        return CMD_RETURN_ERR;
+    }
+
+    return CMD_RETURN_OK;
+}
+
+int ExeCmd_quit(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    if (num_arg != 1 || jobs.size() == 0)
+        return CMD_RETURN_QUIT;
+
+    if (!strcmp(args[1], "kill")) {
+        sort(jobs.begin(), jobs.end(), compareJobsByJobID);
+
+        vector<job>::iterator it;
+        for (it = jobs.begin(); it != jobs.end(); ) {
+            int pid = it->getPid();
+
+            printf("[%d] %s - Sending SIGTERM... ", it->getJobId(), it->getCommand());
+
+            if (kill(pid, SIGTERM) != 0) {
+                perror("smash error: kill failed");
+                return CMD_RETURN_ERR;
+            }
+
+            time_t start = time(NULL);
+            time_t now = time(NULL);
+            while (waitpid(pid, NULL, WNOHANG) == 0 && difftime(now, start) < SIGTERM_TIMEOUT) {
+                now = time(NULL);
+
+                sleep(1);
+            }
+
+            if (difftime(now, start) >= SIGTERM_TIMEOUT) {
+                printf("(5 sec passed) Sending SIGKILL... ");
+                if (kill(pid, SIGKILL) != 0) {
+                    perror("smash error: kill failed");
+                    return CMD_RETURN_ERR;
+                }
+            }
+
+            printf("Done.\n");
+
+            it = jobs.erase(it);
+        }
+
+        return CMD_RETURN_QUIT;
+    }
+    else {
+        return CMD_RETURN_QUIT;
+    }
+
+}
+
+int ExeCmd_diff(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    if (num_arg != DIFF_ARGS){
+        fprintf(stderr, "smash error: diff: invalid arguments\n");
+        return CMD_RETURN_ERR;
+    }
+    else{
+        FILE *f1 = fopen(args[1], "r");
+        if (f1 == NULL) {
+            perror("smash error: fopen failed");
+            return CMD_RETURN_ERR;
+        }
+        FILE *f2 = fopen(args[2], "r");
+        if (f2 == NULL) {
+            perror("smash error: fopen failed");
+            return CMD_RETURN_ERR;
+        }
+        // compare the two files character wise
+        int c1 = getc(f1), c2 = getc(f2);
+
+
+        while (c1 == c2 && c1 != EOF && c2 != EOF){
+            c1 = getc(f1);
+            c2 = getc(f2);
+        }
+        if (c1 == EOF && c2 == EOF){
+            printf("0\n");
+        }
+        else{
+            printf("1\n");
+        }
+
+        return CMD_RETURN_OK;
+    }
+}
+
+
 //**************************************************************************************
 // function name: ExeExternal
 // Description: executes external command
@@ -400,67 +449,62 @@ int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 void ExeExternal(char *args[MAX_ARG], char* cmdString, bool isFg, vector<job> &jobs)
 {
 	int pID;
-    	switch(pID = fork()) 
-	{
-    		case -1: 
-					// Add your code here (error)
-					
-					perror("smash error: fork failed");
+    switch(pID = fork()) {
+        case -1:
+            perror("smash error: fork failed");
+            break;
+        case 0 :
+            // Child Process
+            setpgrp();
 
-				break;
-        	case 0 :
-                	// Child Process
-               		setpgrp();
-					
-			        // Add your code here (execute an external command)
-					//set_foreground(getpid());
-					//cout<<args[0]<<" "<<args[1]<<endl;
-					//cout<<cmdString<<endl;
+            execv(args[0], args);
+            perror("smash error: execv failed");
+            break;
 
-                    //CleanJobs(jobs);
-					execv(args[0], args);
-				break;
-			
-			default:
-                    printf("[DEBUG] PID = %d\n", pID);
-                	// Add your code here
-					if (isFg){
-						//(foreground)
-						set_foreground(pID);
-                        set_fg_cmdString(cmdString);
-						waitpid(pID, NULL, WUNTRACED);
-                        printf("[DEBUG] pid %d state change\n", pID);
-						set_foreground(0);
-					}
-					else{
-						// (background)
-                        printf("[DEBUG] Cleaning stopped jobs...");
-                        CleanJobs(jobs);
-                        printf("Done\n");
+        default:
+            //printf("[DEBUG] PID = %d\n", pID);
+            if (isFg){
+                //(foreground)
+                set_foreground(pID);
+                set_fg_cmdString(cmdString);
+                waitpid(pID, NULL, WUNTRACED);
+                //printf("[DEBUG] pid %d state change\n", pID);
+                set_foreground(0);
+            }
+            else{
+                // (background)
+                //printf("[DEBUG] Cleaning stopped jobs...");
+                CleanJobs(jobs);
+                //printf("Done\n");
 
-						int new_id;
-						time_t start = time(NULL);
-						if (!jobs.empty()) {
-                            printf("[DEBUG] Jobs exist, generating new job ID...");
-                            new_id = jobs[jobs.size() - 1].getJobId() + 1;
-                            printf("%d\n", new_id);
-                        }
-                        else new_id = 1;
+                int new_id;
+                time_t start = time(NULL);
+                if (!jobs.empty()) {
+                    //printf("[DEBUG] Jobs exist, generating new job ID...");
+                    new_id = jobs[jobs.size() - 1].getJobId() + 1;
+                    //printf("%d\n", new_id);
+                }
+                else new_id = 1;
 
-                        printf("[DEBUG] Creating job for <%s>\n", cmdString);
-						job new_job = job(new_id, pID, cmdString, false, start, 0);
-                        printf("[DEBUG] Job created for <%s>\n", new_job.getCommand());
-                        jobs.push_back(new_job);
-                        printf("[DEBUG] Job added\n");
-					}
-				break;
+                //printf("[DEBUG] Creating job for <%s>\n", cmdString);
+                job new_job = job(new_id, pID, cmdString, false, start, 0);
+                //printf("[DEBUG] Job created for <%s>\n", new_job.getCommand());
+                jobs.push_back(new_job);
+                //printf("[DEBUG] Job added\n");
+            }
+            break;
 	}
 }
 
-
+//**************************************************************************************
+// function name: ExeExternal
+// Description: parses command string into arguments array
+// Parameters: external command string, external command arguments
+// Returns: number of arguments not including command on success, -1 on faliure
+//**************************************************************************************
 int cmdParseArgs(char* lineSize, char* args[MAX_ARG])
 {
-    printf("[DEBUG] Parsing args...\n");
+    //printf("[DEBUG] Parsing args...\n");
 	int i = 0, num_arg = 0;
 	const char* delimiters = " \t\n";
     char* cmd;
@@ -478,10 +522,10 @@ int cmdParseArgs(char* lineSize, char* args[MAX_ARG])
 
     }
 
-    printf("[DEBUG] Num args = %d\n", num_arg);
-    i = 0;
-    while (args[i] != NULL) printf("<%s> ", args[i++]);
-    printf("\n");
+    //printf("[DEBUG] Num args = %d\n", num_arg);
+    //i = 0;
+    //while (args[i] != NULL) printf("<%s> ", args[i++]);
+    //printf("\n");
     //ExeExternal(args, lineSize, false, jobs);
 
 	return num_arg;
@@ -524,12 +568,12 @@ int cmdParseType(char* lineSize) {
     char* cmd;
     const char* delimiters = " \t\n";
     int i = strlen(lineSize) - 1;
-    printf("[DEBUG] Last index = %d\n", i);
+    //printf("[DEBUG] Last index = %d\n", i);
     int bgtoken = 0;
 
     while (i >= 0 && isspace(lineSize[i])) i--;
     if (i >= 0 && lineSize[i] == '&') {
-        printf("[DEBUG] Found &\n");
+        //printf("[DEBUG] Found &\n");
         lineSize[i] = '\0';
         bgtoken = 1;
     }
@@ -540,12 +584,12 @@ int cmdParseType(char* lineSize) {
         lineSize[i+1] = '\0';
     }
 
-    printf("[DEBUG] Truncuated full command: %s\n", lineSize);
+    //printf("[DEBUG] Truncuated full command: %s\n", lineSize);
 
     int start_index = strspn(lineSize, delimiters);
-    printf("[DEBUG] start_index = %d\n", start_index);
+    //printf("[DEBUG] start_index = %d\n", start_index);
     int cmd_len = strcspn(lineSize + start_index, delimiters);
-    printf("[DEBUG] cmd_len = %d\n", cmd_len);
+    //printf("[DEBUG] cmd_len = %d\n", cmd_len);
 
     cmd = (char*)malloc(cmd_len + 1);
     strncpy(cmd, lineSize + start_index, cmd_len);
@@ -554,23 +598,23 @@ int cmdParseType(char* lineSize) {
 //    if (cmd == NULL)
 //        return CMD_TYPE_ERR;
 
-    printf("Command: %s\n", cmd);
+    //printf("[DEBUG] Command: %s\n", cmd);
 
     if (isBuiltIn(cmd)) {
-        printf("[DEBUG] Built-in command\n");
+        //printf("[DEBUG] Built-in command\n");
         free(cmd);
         return CMD_TYPE_BUILTIN_FG;
     }
     else {
-        printf("[DEBUG] External command ");
+        //printf("[DEBUG] External command ");
         free(cmd);
 
         if (bgtoken) {
-            printf("BG\n");
+            //printf("BG\n");
             return CMD_TYPE_EXT_BG;
         }
         else {
-            printf("FG\n");
+            //printf("FG\n");
             return CMD_TYPE_EXT_FG;
         }
     }
