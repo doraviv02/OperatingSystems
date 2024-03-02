@@ -85,6 +85,7 @@ int ExeCmd_showpid(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
 }
 
 int ExeCmd_cd(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    char buff[PATH_MAX] = "";
     if (num_arg > 1) {
         printf("smash error: cd: too many arguments\n");
         return CMD_RETURN_ERR;
@@ -111,8 +112,16 @@ int ExeCmd_cd(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
             }
         }
         else{
-            getcwd(old_pwd, PATH_MAX);
-            chdir(args[1]);
+
+            if (getcwd(buff, PATH_MAX) == NULL) {
+                perror("smash error: getcwd failed");
+                return CMD_RETURN_ERR;
+            }
+            if (chdir(args[1]) == -1) {
+                perror("smash error: chdir failed");
+                return CMD_RETURN_ERR;
+            }
+            strcpy(old_pwd, buff);
             return CMD_RETURN_OK;
         }
     }
