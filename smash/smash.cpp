@@ -31,21 +31,8 @@ int main(int argc, char *argv[])
     char cmdString[MAX_LINE_SIZE]; 	 
     char* args[MAX_ARG];
 
-	
-	//signal declaretions
-	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
-	 /* add your code here */
-	
-	/************************************/
-	//NOTE: the signal handlers and the function/s that sets the handler should be found in siganls.c
-	//set your signal handlers here
-	/* add your code here */
 	signal(SIGINT, handler_cntlc);
 	signal(SIGTSTP, handler_cntlz);
-	/************************************/
-
-	/************************************/
-	// Init globals 
 
     set_foreground(0);
     set_fg_jobID(0);
@@ -62,6 +49,7 @@ int main(int argc, char *argv[])
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';
 
+        //PARSE INCOMING COMMAND
         int cmd_type = cmdParseType(lineSize);
         int arg_num, ret;
         switch (cmd_type) {
@@ -78,7 +66,6 @@ int main(int argc, char *argv[])
 
                 break;
             case CMD_TYPE_EXT_FG:
-
                 cmdParseArgs(lineSize, args);
                 //printf("[DEBUG] cmdString: <%s>\n", cmdString);
                 ExeExternal(args, cmdString, 1, jobs);
@@ -91,10 +78,8 @@ int main(int argc, char *argv[])
                 break;
         }
 
-	 				// built in commands
-		//ExeCmd(jobs, lineSize, cmdString);
+
 	}
-	// deallocate jobs vector
-	jobs.clear();
+
 }
 

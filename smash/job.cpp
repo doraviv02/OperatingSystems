@@ -2,7 +2,7 @@
 #include "job.h"
 #define MAX_LINE_SIZE 80
 
-
+//constructor
 job::job(int job_id, int pid, char* command, bool isStopped, time_t start, time_t end){
     this->job_id = job_id;
     this->pid = pid;
@@ -13,6 +13,7 @@ job::job(int job_id, int pid, char* command, bool isStopped, time_t start, time_
     this->end = end;
 }
 
+//copy constructor
 job::job(const job& other) {
     this->job_id = other.job_id;
     this->pid = other.pid;
@@ -23,6 +24,7 @@ job::job(const job& other) {
     this->end = other.end;
 }
 
+//copy = operator constructor
 job& job::operator=(const job& other) {
     if (this != &other) {
         delete[] this->command;

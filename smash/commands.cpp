@@ -21,13 +21,10 @@ char cwd[PATH_MAX];
 int ExeCmd(vector<job> &jobs, char* args[MAX_ARG], int num_arg)
 {
 	char* cmd = args[0];
-/*************************************************/
-// Built in Commands PLEASE NOTE NOT ALL REQUIRED
-// ARE IN THIS CHAIN OF IF COMMANDS. PLEASE ADD
-// MORE IF STATEMENTS AS REQUIRED
-/*************************************************/
+
     CleanJobs(jobs);
 
+    /*************************************************/
     if (!strcmp(cmd, "cd") )
 	{
  		return ExeCmd_cd(jobs, args, num_arg);
@@ -131,7 +128,8 @@ int ExeCmd_pwd(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
 }
 
 int ExeCmd_jobs(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
-    sort(jobs.begin(), jobs.end(), compareJobsByJobID);
+    sort(jobs.begin(), jobs.end(), compareJobsByJobID); //sort jobs by jobID
+
     int job_id, pid;
     char* command;
     bool isStopped;
@@ -155,11 +153,13 @@ int ExeCmd_jobs(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
 }
 
 int ExeCmd_kill(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    //check format: kill -<signum> <job_id>
     if (num_arg != 2 || args[1][0] != '-') {
         fprintf(stderr, "smash error: kill: invalid arguments\n");
         return CMD_RETURN_ERR;
     }
 
+    //are arguments integers?
     int arg_len = strlen(args[1]);
     for (int i = 1; i < arg_len; i++) {
         if (!isdigit(args[1][i])) {
@@ -176,6 +176,7 @@ int ExeCmd_kill(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
         }
     }
 
+    //parse arguments
     int signum, jobID, pid;
     sscanf(args[1], "-%d", &signum);
     sscanf(args[2], "%d", &jobID);
@@ -193,12 +194,16 @@ int ExeCmd_kill(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
                 perror("smash error: kill failed");
                 return CMD_RETURN_ERR;
             }
+
+            //if sent stop signal, update job object (probably not necessary but doesn't work, I think...)
             if (signum == SIGSTOP || signum == SIGTSTP) {
                 it->setIsStopped(true);
             }
+
             return CMD_RETURN_OK;
         }
     }
+
     fprintf(stderr, "smash error: kill: job-id %d does not exist\n", jobID);
     return CMD_RETURN_ERR;
 }
@@ -212,6 +217,8 @@ int ExeCmd_fg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
         return CMD_RETURN_ERR;
     }
     else if (num_arg == 1) {
+
+        //check if argument is number
         int arg_len = strlen(args[1]);
         for (int i = 0; i < arg_len; i++) {
             if (!isdigit(args[1][i])) {
@@ -233,29 +240,23 @@ int ExeCmd_fg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
             return CMD_RETURN_ERR;
         }
     }
-    else {
+    else { //no arguments, select largest job ID
+
         if (jobs.size() == 0) {
             fprintf(stderr, "smash error: fg: jobs list is empty\n");
             return CMD_RETURN_ERR;
         }
 
-        int maxJobID = 0;
-        for (it = jobs.begin(); it != jobs.end(); it++) {
-            if (it->getJobId() > maxJobID) {
-                maxJobID = it->getJobId();
-            }
-        }
+        sort(jobs.begin(), jobs.end(), compareJobsByJobID); //sort jobs by jobID
 
-        for (it = jobs.begin(); it != jobs.end(); it++) {
-            if (it->getJobId() == maxJobID) {
-                break;
-            }
-        }
+        it = jobs.end();
+        it--; //final element in sorted array is largest job ID
+
+        jobID = it->getJobId();
     }
 
     selPID = it->getPid();
     char *cmdString = it->getCommand();
-
     printf("%s : %d\n", cmdString, selPID);
 
     set_foreground(selPID);
@@ -269,6 +270,7 @@ int ExeCmd_fg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
         return CMD_RETURN_ERR;
     }
 
+    //wait for foreground process to change status
     if (waitpid(selPID, NULL, WUNTRACED) == -1) {
         perror("smash error: waitpid failed");
         return CMD_RETURN_ERR;
@@ -277,6 +279,7 @@ int ExeCmd_fg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
     set_foreground(0);
     char empty[MAX_LINE_SIZE] = {'\0'};
     set_fg_cmdString(empty);
+    set_fg_jobID(0);
 
     return CMD_RETURN_OK;
 }
@@ -290,6 +293,8 @@ int ExeCmd_bg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
         return CMD_RETURN_ERR;
     }
     else if (num_arg == 1) {
+
+        //is argument number?
         int arg_len = strlen(args[1]);
         for (int i = 0; i < arg_len; i++) {
             if (!isdigit(args[1][i])) {
@@ -317,29 +322,24 @@ int ExeCmd_bg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
             return CMD_RETURN_ERR;
         }
     }
-    else {
+    else { //no argument, get stopped job with the largest ID
         if (jobs.size() == 0) {
             fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
             return CMD_RETURN_ERR;
         }
 
-        int maxJobID = 0;
-        for (it = jobs.begin(); it != jobs.end(); it++) {
-            if (it->getJobId() > maxJobID && it->getIsStopped()) {
-                maxJobID = it->getJobId();
-            }
-        }
+        sort(jobs.begin(), jobs.end(), compareJobsByJobID); //sort jobs by jobID
 
-        if (!maxJobID) {
-            fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
-            return CMD_RETURN_ERR;
-        }
-
-        for (it = jobs.begin(); it != jobs.end(); it++) {
-            if (it->getJobId() == maxJobID) {
-                break;
+        it = jobs.end();
+        it--; //final element in sorted array is largest job ID
+        while (it->getIsStopped() == 0) { //go backwards until reaching stopped process
+            if (it == jobs.begin()) { //if we got through all jobs without finding a stopped one
+                fprintf(stderr, "smash error: bg: there are no stopped jobs to resume\n");
+                return CMD_RETURN_ERR;
             }
+            it--;
         }
+        //jobID = it->getJobId();
     }
 
     selPID = it->getPid();
@@ -358,6 +358,7 @@ int ExeCmd_bg(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
 }
 
 int ExeCmd_quit(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+    //if there's not 1 argument, or if there are no jobs to kill anyway...
     if (num_arg != 1 || jobs.size() == 0)
         return CMD_RETURN_QUIT;
 
@@ -366,20 +367,23 @@ int ExeCmd_quit(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
 
         vector<job>::iterator it;
         for (it = jobs.begin(); it != jobs.end(); ) {
+
+            int jobId = it->getJobId();
+            char* comm = it->getCommand();
+            printf("[%d] %s - Sending SIGTERM... ", jobId, comm);
+            fflush(stdout); //stdout is line buffered, we need to flush messages without \n
+
             int pid = it->getPid();
-
-            printf("[%d] %s - Sending SIGTERM... ", it->getJobId(), it->getCommand());
-
             if (kill(pid, SIGTERM) != 0) {
                 perror("smash error: kill failed");
                 return CMD_RETURN_ERR;
             }
 
+            //Every 1 second, check (non-blockingly) if the process has been terminated, or if timeout reached
             time_t start = time(NULL);
             time_t now = time(NULL);
             while (waitpid(pid, NULL, WNOHANG) == 0 && difftime(now, start) < SIGTERM_TIMEOUT) {
                 now = time(NULL);
-
                 sleep(1);
             }
 
@@ -393,7 +397,9 @@ int ExeCmd_quit(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
 
             printf("Done.\n");
 
+            //erase job and iterate to next
             it = jobs.erase(it);
+
         }
 
         return CMD_RETURN_QUIT;
@@ -564,6 +570,12 @@ int CleanJobs(vector<job> &jobs) {
     return cleaned;
 }
 
+//**************************************************************************************
+// function name: cmdParseType
+// Description: parse the type of command: invalid, built-in, external BG or external FG
+// Parameters: command string
+// Returns: command type (see commands.h)
+//**************************************************************************************
 int cmdParseType(char* lineSize) {
     char* cmd;
     const char* delimiters = " \t\n";
@@ -571,26 +583,28 @@ int cmdParseType(char* lineSize) {
     //printf("[DEBUG] Last index = %d\n", i);
     int bgtoken = 0;
 
+    //skip trailing whitespace
     while (i >= 0 && isspace(lineSize[i])) i--;
-    if (i >= 0 && lineSize[i] == '&') {
+    if (i >= 0 && lineSize[i] == '&') { //if reached &, take note and trim it
         //printf("[DEBUG] Found &\n");
         lineSize[i] = '\0';
         bgtoken = 1;
     }
-    else if (i < 0) {
+    else if (i < 0) { //all whitespace
         return CMD_TYPE_ERR;
     }
-    else {
+    else { //trim whitespace
         lineSize[i+1] = '\0';
     }
 
     //printf("[DEBUG] Truncuated full command: %s\n", lineSize);
 
-    int start_index = strspn(lineSize, delimiters);
+    int start_index = strspn(lineSize, delimiters); //skip over heading whitespace
     //printf("[DEBUG] start_index = %d\n", start_index);
-    int cmd_len = strcspn(lineSize + start_index, delimiters);
+    int cmd_len = strcspn(lineSize + start_index, delimiters); //count non-whitespace chars in a row
     //printf("[DEBUG] cmd_len = %d\n", cmd_len);
 
+    //copy first argument (command)
     cmd = (char*)malloc(cmd_len + 1);
     strncpy(cmd, lineSize + start_index, cmd_len);
     cmd[cmd_len] = '\0';
@@ -620,6 +634,7 @@ int cmdParseType(char* lineSize) {
     }
 }
 
+//check if command is a built-in one
 int isBuiltIn(char* cmd) {
     if (strcmp(cmd, "showpid") != 0 &&
         strcmp(cmd, "pwd") != 0 &&

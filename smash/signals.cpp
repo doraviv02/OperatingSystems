@@ -58,7 +58,7 @@ void handler_cntlz(int sig_num){
                 jobID = jobs[jobs.size() - 1].getJobId() + 1;
             else jobID = 1;
         }
-        else {
+        else { //if we already had a jobID (brought to foreground), keep it
             jobID = cur_fg_jobID;
         }
 
