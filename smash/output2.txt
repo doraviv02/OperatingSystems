@@ -1,0 +1,89 @@
+smash > smash error: fg: jobs list is empty
+smash > smash error: fg: job-id 1 does not exist
+smash > smash > smash > smash > smash > smash > smash error: fg: job-id 18 does not exist
+smash > smash error: fg: invalid arguments
+smash > smash error: bg: there are no stopped jobs to resume
+smash > smash error: bg: job-id 3 is already running in the background
+smash > /bin/sleep 100 & : 5619
+smash: caught ctrl-C
+smash: process 5619 was killed
+smash > [2] /bin/sleep 100 & : 5620 3 secs
+[3] /bin/sleep 100 & : 5621 3 secs
+[4] /bin/sleep 100 & : 5622 3 secs
+[5] /bin/sleep 100 & : 5623 3 secs
+smash > /bin/sleep 100 & : 5621
+smash: caught ctrl-Z
+smash: process 5621 was stopped
+smash > [2] /bin/sleep 100 & : 5620 3 secs
+[3] /bin/sleep 100 & : 5621 0 secs (stopped)
+[4] /bin/sleep 100 & : 5622 3 secs
+[5] /bin/sleep 100 & : 5623 3 secs
+smash > /bin/sleep 100 & : 5623
+smash: caught ctrl-Z
+smash: process 5623 was stopped
+smash > [2] /bin/sleep 100 & : 5620 3 secs
+[3] /bin/sleep 100 & : 5621 0 secs (stopped)
+[4] /bin/sleep 100 & : 5622 3 secs
+[5] /bin/sleep 100 & : 5623 0 secs (stopped)
+smash > /bin/sleep 100 & : 5623
+smash > [2] /bin/sleep 100 & : 5620 3 secs
+[3] /bin/sleep 100 & : 5621 0 secs (stopped)
+[4] /bin/sleep 100 & : 5622 3 secs
+[5] /bin/sleep 100 & : 5623 0 secs
+smash > /bin/sleep 100 & : 5623
+smash: caught ctrl-C
+smash: process 5623 was killed
+smash > [2] /bin/sleep 100 & : 5620 4 secs
+[3] /bin/sleep 100 & : 5621 1 secs (stopped)
+[4] /bin/sleep 100 & : 5622 4 secs
+smash > smash > [2] /bin/sleep 100 & : 5620 4 secs
+[3] /bin/sleep 100 & : 5621 1 secs (stopped)
+[4] /bin/sleep 100 & : 5622 4 secs
+[5] /bin/sleep 100 & : 5624 0 secs
+smash > /bin/sleep 100 & : 5624
+smash: caught ctrl-C
+smash: process 5624 was killed
+smash > smash > [2] /bin/sleep 100 & : 5620 4 secs
+[3] /bin/sleep 100 & : 5621 1 secs (stopped)
+[4] /bin/sleep 100 & : 5622 4 secs
+[5] /bin/sleep 100 & : 5625 0 secs
+smash > /bin/sleep 100 & : 5620
+smash: caught ctrl-Z
+smash: process 5620 was stopped
+smash > [2] /bin/sleep 100 & : 5620 0 secs (stopped)
+[3] /bin/sleep 100 & : 5621 1 secs (stopped)
+[4] /bin/sleep 100 & : 5622 4 secs
+[5] /bin/sleep 100 & : 5625 0 secs
+smash > /bin/sleep 100 & : 5621
+smash > [2] /bin/sleep 100 & : 5620 0 secs (stopped)
+[3] /bin/sleep 100 & : 5621 1 secs
+[4] /bin/sleep 100 & : 5622 4 secs
+[5] /bin/sleep 100 & : 5625 0 secs
+smash > smash error: bg: job-id 10 does not exist
+smash > smash error: bg: job-id 4 is already running in the background
+smash > smash error: bg: invalid arguments
+smash > smash: caught ctrl-Z
+smash: process 5626 was stopped
+smash > [2] /bin/sleep 100 & : 5620 1 secs (stopped)
+[3] /bin/sleep 100 & : 5621 2 secs
+[4] /bin/sleep 100 & : 5622 5 secs
+[5] /bin/sleep 100 & : 5625 1 secs
+[6] /bin/sleep 100 : 5626 0 secs (stopped)
+smash > /bin/sleep 100 : 5626
+smash > [2] /bin/sleep 100 & : 5620 1 secs (stopped)
+[3] /bin/sleep 100 & : 5621 2 secs
+[4] /bin/sleep 100 & : 5622 5 secs
+[5] /bin/sleep 100 & : 5625 1 secs
+[6] /bin/sleep 100 : 5626 0 secs
+smash > /bin/sleep 100 & : 5621
+smash: caught ctrl-C
+smash: process 5621 was killed
+smash > /bin/sleep 100 & : 5625
+smash: caught ctrl-C
+smash: process 5625 was killed
+smash > [2] /bin/sleep 100 & : 5620 1 secs (stopped)
+[4] /bin/sleep 100 & : 5622 5 secs
+[6] /bin/sleep 100 : 5626 0 secs
+smash > [2] /bin/sleep 100 & - Sending SIGTERM... (5 sec passed) sending SIGKILL... Done.
+[4] /bin/sleep 100 & - Sending SIGTERM... Done.
+[6] /bin/sleep 100 - Sending SIGTERM... Done.

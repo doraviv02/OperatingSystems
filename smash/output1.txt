@@ -1,0 +1,135 @@
+smash > smash pid is 5490
+smash > smash pid is 5490
+smash > smash pid is 5490
+smash > smash > /media/sf_OS/HW1
+smash > /media/sf_OS/HW1
+smash > /media/sf_OS/HW1
+smash > smash > smash error: cd: OLDPWD not set
+smash > smash error: cd: too many arguments
+smash > smash error: cd: too many arguments
+smash > smash error: chdir failed: No such file or directory
+smash > smash > /media/sf_OS
+smash > smash > /media
+smash > smash > /media/sf_OS
+smash > smash > /media
+smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash error: kill: job-id 10 does not exist
+smash > smash error: kill: invalid arguments
+smash > smash error: kill: invalid arguments
+smash > [1] /bin/sleep 3 & : 5491 0 secs
+[2] /bin/sleep 8 & : 5492 0 secs
+[3] /bin/sleep 2 & : 5493 0 secs
+[4] /bin/sleep 13 & : 5494 0 secs
+[5] /bin/sleep 2 & : 5495 0 secs
+[6] /bin/sleep 8 & : 5496 0 secs
+[7] /bin/sleep 1 & : 5497 0 secs
+[8] /bin/sleep 3 & : 5498 0 secs
+smash > smash > [2] /bin/sleep 8 & : 5492 4 secs
+[4] /bin/sleep 13 & : 5494 4 secs
+[6] /bin/sleep 8 & : 5496 4 secs
+smash > smash > [2] /bin/sleep 8 & : 5492 4 secs
+[4] /bin/sleep 13 & : 5494 4 secs
+[6] /bin/sleep 8 & : 5496 4 secs
+[7] /bin/sleep 1 & : 5500 0 secs
+smash > smash > [4] /bin/sleep 13 & : 5494 8 secs
+smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > smash > [1] /bin/sleep 3 & : 5503 0 secs
+[2] /bin/sleep 2 & : 5504 0 secs
+[3] /bin/sleep 2 & : 5505 0 secs
+[4] /bin/sleep 1 & : 5506 0 secs
+[5] /bin/sleep 8 & : 5507 0 secs
+[6] /bin/sleep 3 & : 5508 0 secs
+[7] /bin/sleep 2 & : 5509 0 secs
+[8] /bin/sleep 2 & : 5510 0 secs
+[9] /bin/sleep 1 & : 5511 0 secs
+[10] /bin/sleep 8 & : 5512 0 secs
+[11] /bin/sleep 3 & : 5513 0 secs
+[12] /bin/sleep 2 & : 5514 0 secs
+[13] /bin/sleep 2 & : 5515 0 secs
+[14] /bin/sleep 1 & : 5516 0 secs
+[15] /bin/sleep 3 & : 5517 0 secs
+[16] /bin/sleep 100 & : 5518 0 secs
+[17] /bin/sleep 2 & : 5519 0 secs
+[18] /bin/sleep 2 & : 5520 0 secs
+[19] /bin/sleep 1 & : 5521 0 secs
+[20] /bin/sleep 3 & : 5522 0 secs
+[21] /bin/sleep 3 & : 5523 0 secs
+[22] /bin/sleep 8 & : 5524 0 secs
+[23] /bin/sleep 2 & : 5525 0 secs
+[24] /bin/sleep 1 & : 5526 0 secs
+[25] /bin/sleep 3 & : 5527 0 secs
+[26] /bin/sleep 3 & : 5528 0 secs
+[27] /bin/sleep 2 & : 5529 0 secs
+[28] /bin/sleep 2 & : 5530 0 secs
+[29] /bin/sleep 100 & : 5531 0 secs
+[30] /bin/sleep 3 & : 5532 0 secs
+[31] /bin/sleep 3 & : 5533 0 secs
+[32] /bin/sleep 2 & : 5534 0 secs
+[33] /bin/sleep 2 & : 5535 0 secs
+[34] /bin/sleep 1 & : 5536 0 secs
+[35] /bin/sleep 2   & : 5537 0 secs
+[36] /bin/sleep 3 & : 5538 0 secs
+[37] /bin/sleep 2   & : 5539 0 secs
+[38] /bin/sleep 2 & : 5540 0 secs
+[39] /bin/sleep 1 & : 5541 0 secs
+[40] /bin/sleep   3 & : 5542 0 secs
+[41] /bin/sleep 3 & : 5543 0 secs
+[42] /bin/sleep 2 & : 5544 0 secs
+[43] /bin/sleep 2 & : 5545 0 secs
+[44] /bin/sleep 1 & : 5546 0 secs
+[45] /bin/sleep 3 & : 5547 0 secs
+[46] /bin/sleep 3 & : 5548 0 secs
+[47] /bin/sleep 2 & : 5549 0 secs
+[48] /bin/sleep 2 & : 5550 0 secs
+[49] /bin/sleep             1 & : 5551 0 secs
+[50] /bin/sleep 8 & : 5552 0 secs
+[51] /bin/sleep 3 & : 5553 0 secs
+[52] /bin/sleep 2 & : 5554 0 secs
+[53] /bin/sleep 2 & : 5555 0 secs
+[54] /bin/sleep 1   & : 5556 0 secs
+[55] /bin/sleep 3 & : 5557 0 secs
+[56] /bin/sleep 3 & : 5558 0 secs
+[57] /bin/sleep 2 & : 5559 0 secs
+[58] /bin/sleep 2 & : 5560 0 secs
+[59] /bin/sleep 1 & : 5561 0 secs
+[60] /bin/sleep 3 & : 5562 0 secs
+[61] /bin/sleep 3 & : 5563 0 secs
+[62] /bin/sleep 2 & : 5564 0 secs
+[63] /bin/sleep 2 & : 5565 0 secs
+[64] /bin/sleep 1 & : 5566 0 secs
+[65] /bin/sleep 3 & : 5567 0 secs
+[66] /bin/sleep 3 & : 5568 0 secs
+[67] /bin/sleep 2 & : 5569 0 secs
+[68] /bin/sleep 2 & : 5570 0 secs
+[69] /bin/sleep 1 & : 5571 0 secs
+[70] /bin/sleep 3 & : 5572 0 secs
+[71] /bin/sleep 3 & : 5573 0 secs
+[72] /bin/sleep 8 & : 5574 0 secs
+[73] /bin/sleep 2 & : 5575 0 secs
+[74] /bin/sleep 100     & : 5576 0 secs
+[75] /bin/sleep 3 & : 5577 0 secs
+[76] /bin/sleep 3 & : 5578 0 secs
+[77] /bin/sleep 2 & : 5579 0 secs
+[78] /bin/sleep 2 & : 5580 0 secs
+[79] /bin/sleep 1 & : 5581 0 secs
+[80] /bin/sleep 3 & : 5582 0 secs
+[81] /bin/sleep 3 & : 5583 0 secs
+[82] /bin/sleep 2 & : 5584 0 secs
+[83] /bin/sleep 2 & : 5585 0 secs
+[84] /bin/sleep 1 & : 5586 0 secs
+[85] /bin/sleep 3      & : 5587 0 secs
+[86] /bin/sleep 3 & : 5588 0 secs
+[87] /bin/sleep 2 & : 5589 0 secs
+[88] /bin/sleep 2 & : 5590 0 secs
+[89] /bin/sleep     8 & : 5591 0 secs
+[90] /bin/sleep 3 & : 5592 0 secs
+[91] /bin/sleep 3 & : 5593 0 secs
+[92] /bin/sleep 2 & : 5594 0 secs
+[93] /bin/sleep 2 & : 5595 0 secs
+[94] /bin/sleep 1 & : 5596 0 secs
+[95] /bin/sleep 3 & : 5597 0 secs
+[96] /bin/sleep 3 & : 5598 0 secs
+[97] /bin/sleep 2 & : 5599 0 secs
+[98] /bin/sleep 2 & : 5600 0 secs
+[99] /bin/sleep 1 & : 5601 0 secs
+[100] /bin/sleep 3 & : 5602 0 secs
+smash > smash error: execv failed: No such file or directory
+smash > smash > smash error: execv failed: No such file or directory
