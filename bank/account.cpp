@@ -1,10 +1,10 @@
 // implement acocunt
 #include "account.h"
 
-account::account(int account_i, int password){
+account::account(int account_i, int password, int initial_amount){
     this->account_id = account_id;
     this->password = password;
-    this->balance = 0;
+    this->balance = initial_amount;
 }
 
 bool account::check_password(int test_password){

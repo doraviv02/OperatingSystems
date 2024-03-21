@@ -1,5 +1,8 @@
 #include <iostream>
+#include <fstream>
+#include <unistd.h>
 #include "atm.h"
+
 
 using namespace std;
 

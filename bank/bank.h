@@ -5,8 +5,9 @@ using namespace std;
 
 class Bank{
     public:
+        Bank();
         Bank(vector<account> accounts);
-        void add_account(int account_id, int password, int initial_ammount);
+        void add_account(int account_id, int password, int initial_amount);
         int check_account(int account_id);
         bool check_password(int i, int password);
         int get_balance(int i) {return accounts[i].get_balance();}

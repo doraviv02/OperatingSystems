@@ -15,7 +15,6 @@ public:
 private:
     int id;
     Bank* bank;
-
     int check_account_id(int acount_id);
     bool check_password(int index, int password);
 };
