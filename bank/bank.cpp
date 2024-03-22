@@ -6,10 +6,10 @@ Bank::Bank(){
     this->balance = 0;
 }
 
-Bank::Bank(vector<account> accounts){
-    this->accounts = accounts;
-    this->balance = 0;
-}
+// Bank::Bank(vector<account> accounts){
+//     this->accounts = accounts;
+//     this->balance = 0;
+// }
 
 void Bank::add_account(int account_id, int password, int initial_amount){
     account* a = new account(account_id, password, initial_amount);

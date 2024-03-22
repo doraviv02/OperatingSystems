@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <atm.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <vector>
 #include <fstream>
 #include <sstream>
 
+#include "atm.h"
 #include "bank.h"
 
 using namespace std;

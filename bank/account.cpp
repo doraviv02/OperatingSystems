@@ -7,10 +7,6 @@ account::account(int account_i, int password, int initial_amount){
     this->balance = initial_amount;
 }
 
-bool account::check_password(int test_password){
-    return test_password == password;
-}
-
 int account::deposit_funds(int amount){
     balance += amount;
     return balance;
