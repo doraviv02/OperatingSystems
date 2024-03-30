@@ -9,6 +9,8 @@ main file. This file contains the main function of smash
 #include <string.h>
 #include <signal.h>
 #include <vector>
+#include <iostream>
+#include <iostream>
 #include "job.h"
 #include "commands.h"
 #include "signals.h"
@@ -44,7 +46,8 @@ int main(int argc, char *argv[])
         lineSize[0]='\0';
         cmdString[0]='\0';
 
-	 	printf("smash > ");
+        cout<<"smash > ";
+	 	// printf("smash > ");
 		fgets(lineSize, MAX_LINE_SIZE, stdin);
 		strcpy(cmdString, lineSize);    	
 		cmdString[strlen(lineSize)-1]='\0';

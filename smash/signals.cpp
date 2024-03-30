@@ -26,14 +26,16 @@ void set_fg_jobID(int jobID) {
 /* Name: handler_cntlc
    Synopsis: handle the Control-C */
 void handler_cntlc(int sig_num){
-     printf("smash: caught ctrl-C\n");
+    //  printf("smash: caught ctrl-C\n");
+    cout<<"smash: caught ctrl-C"<<endl;
      if (cur_fg_pid != 0) {
        if (kill(cur_fg_pid, SIGKILL) != 0) {
            perror("smash error: kill failed");
            return;
        }
 
-       printf("process %d was killed\n", cur_fg_pid);
+        cout<<"process "<<cur_fg_pid<<" was killed"<<endl; // "process %d was killed\n"
+    //    printf("process %d was killed\n", cur_fg_pid);
        set_foreground(0);
        char empty[MAX_LINE_SIZE] = {'\0'};
        set_fg_cmdString(empty);
@@ -46,7 +48,8 @@ void handler_cntlc(int sig_num){
 /* Name: handler_cntlz
    Synopsis: handle the Control-Z */
 void handler_cntlz(int sig_num){
-     printf("smash: caught ctrl-Z\n");
+    cout<<"smash: caught ctrl-Z"<<endl;
+    //  printf("smash: caught ctrl-Z\n");
      if (cur_fg_pid != 0){
         //printf("[DEBUG] Foreground process found!\n");
 
@@ -75,7 +78,8 @@ void handler_cntlz(int sig_num){
             perror("smash error: kill failed");
             return;
         }
-        printf("process %d was stopped\n", cur_fg_pid);
+        cout<<"process "<<cur_fg_pid<<" was stopped"<<endl; // "process %d was stopped\n
+        // printf("process %d was stopped\n", cur_fg_pid);
 
         set_foreground(0);
         set_fg_jobID(0);

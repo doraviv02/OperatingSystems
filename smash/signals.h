@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <iostream>
 
 extern int cur_fg_pid;
 extern int cur_fg_jobID;
