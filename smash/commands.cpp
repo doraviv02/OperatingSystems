@@ -140,7 +140,7 @@ int ExeCmd_pwd(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
     return CMD_RETURN_OK;
 }
 
-int  (vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
+int ExeCmd_jobs(vector<job> &jobs, char* args[MAX_ARG], int num_arg) {
     sort(jobs.begin(), jobs.end(), compareJobsByJobID); //sort jobs by jobID
 
     int job_id, pid;
