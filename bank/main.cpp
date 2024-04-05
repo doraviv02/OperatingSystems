@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
+#include <iostream>
 
 #include "atm.h"
 #include "bank.h"
@@ -12,7 +13,7 @@ using namespace std;
 
 struct ATM_Command{
     int ATM_id;
-    string command;
+    char* command;
 };
 
 Bank* bank = new Bank();
@@ -66,13 +67,19 @@ void parse_command(string line, int id){
 
 void* ATM_runner(void* arg) // Run ATM thread
 {
+    printf("[DEBUG] aaa\n");
     ATM_Command* atm_command = (ATM_Command*) arg;
-    ifstream file(atm_command->command);
+    char* input_file_name = atm_command->command;
+    int ATM_id = atm_command->ATM_id;
+
+    ifstream file(input_file_name);
     string line;
+    printf("[DEBUG] ATM_runner %d %s\n", ATM_id, input_file_name);
     while(getline(file, line)){
         //parse the line and do command somehow
-        parse_command(line, atm_command->ATM_id);
-        sleep(0.1); //sleep for 100ms
+        printf("[DEBUG] ATM %d running %s\n", ATM_id, line.c_str());
+        //parse_command(line, atm_command->ATM_id);
+        sleep(1); //sleep for 100ms
     }
     file.close();
     pthread_exit(NULL);
@@ -89,16 +96,22 @@ void* Bank_runner(void* arg){
 
 int main(int argc, char* argv[])
 {
-    pthread_t threads[argc]; //last thread is the bank thread
-    printf("You have entered %d arguments:\n", argc);
- 
-    for (int i = 0; i < argc; i++) {
+    int ATM_total_num = argc - 1;
+    pthread_t threads[ATM_total_num + 1]; //last thread is the bank thread
+    printf("[DEBUG] Number of ATMs: %d\n", ATM_total_num);
+
+    for (int i = 0; i < ATM_total_num; i++) {
+
         ATMs.push_back(ATM(i, bank));
-        ATM_Command atm_command = {i, argv[i]};
+        ATM_Command atm_command = {i, argv[i+1]};
+        printf("[DEBUG] Adding ATM #%d from %s\n", i, argv[i+1]);
         pthread_create(&threads[i], NULL, ATM_runner, &atm_command);
         //printf("%s\n", argv[i]);
     }
 
+    for (int i = 0; i < ATM_total_num; i++) {
+        pthread_join(threads[i], NULL);
+    }
     return 0;
 }
 
