@@ -35,24 +35,30 @@ void parse_command(string line, int id){
         getline(ss, initial_amount, ' '); //get the initial amount
         int initial = stoi(initial_amount);
         ATMs[id].open_account(account_id, pass, initial);
+//        printf("[DEBUG] ATM %d Opening account %d with password %d and initial amount %d\n", id, account_id,
+//               pass, initial);
     }
     else if (command == "D"){
         string amount;
         getline(ss, amount, ' '); //get the amount
         int am = stoi(amount);
         ATMs[id].deposit(account_id, pass, am);
+        //printf("[DEBUG] ATM %d Depositing %d to account %d with password %d\n", id, am, account_id, pass);
     }
     else if (command == "W"){
         string amount;
         getline(ss, amount, ' '); //get the amount
         int am = stoi(amount);
         ATMs[id].withdraw(account_id, pass, am);
+        //printf("[DEBUG] ATM %d Withdrawing %d from account %d with password %d\n", id, am, account_id, pass);
     }
     else if (command == "B"){
         ATMs[id].check_balance(account_id, pass);
+        //printf("[DEBUG] ATM %d Checking balance of account %d with password %d\n", id, account_id, pass);
     }
     else if (command == "Q"){ //close account
         ATMs[id].close_account(account_id, pass);
+        //printf("[DEBUG] ATM %d Closing account %d with password %d\n", id, account_id, pass);
     }
     else if (command == "T"){
         string target_account, amount;
@@ -61,24 +67,26 @@ void parse_command(string line, int id){
         int target = stoi(target_account);
         int am = stoi(amount);
         ATMs[id].transfer(account_id, pass, target, am);
+//        printf("[DEBUG] ATM %d Transferring %d from account %d with password %d to account %d\n", id,
+//               am, account_id, pass, target);
     }
     
 }
 
 void* ATM_runner(void* arg) // Run ATM thread
 {
-    printf("[DEBUG] aaa\n");
+    //printf("[DEBUG] aaa\n");
     ATM_Command* atm_command = (ATM_Command*) arg;
     char* input_file_name = atm_command->command;
     int ATM_id = atm_command->ATM_id;
 
     ifstream file(input_file_name);
     string line;
-    printf("[DEBUG] ATM_runner %d %s\n", ATM_id, input_file_name);
+    //printf("[DEBUG] ATM_runner %d %s\n", ATM_id, input_file_name);
     while(getline(file, line)){
         //parse the line and do command somehow
-        printf("[DEBUG] ATM %d running %s\n", ATM_id, line.c_str());
-        //parse_command(line, atm_command->ATM_id);
+        //printf("[DEBUG] ATM %d running %s\n", ATM_id, line.c_str());
+        parse_command(line, atm_command->ATM_id);
         sleep(1); //sleep for 100ms
     }
     file.close();
@@ -98,13 +106,13 @@ int main(int argc, char* argv[])
 {
     int ATM_total_num = argc - 1;
     pthread_t threads[ATM_total_num + 1]; //last thread is the bank thread
-    printf("[DEBUG] Number of ATMs: %d\n", ATM_total_num);
+    //printf("[DEBUG] Number of ATMs: %d\n", ATM_total_num);
 
     for (int i = 0; i < ATM_total_num; i++) {
 
         ATMs.push_back(ATM(i, bank));
         ATM_Command atm_command = {i, argv[i+1]};
-        printf("[DEBUG] Adding ATM #%d from %s\n", i, argv[i+1]);
+        //printf("[DEBUG] Adding ATM #%d from %s\n", i, argv[i+1]);
         pthread_create(&threads[i], NULL, ATM_runner, &atm_command);
         //printf("%s\n", argv[i]);
     }

@@ -11,13 +11,13 @@ ATM::ATM(int id, Bank* bank){
     this->bank = bank;
 }
 
-void ATM::open_account(int account_id, int password, int initial_ammount){
+void ATM::open_account(int account_id, int password, int initial_amount){
     if (bank->check_account(account_id) != -1){ //account id already used
         cout<<"Error "<<this->id<<": Your transaction failed - account with the same id exists"<<endl;
     }
     else{
-        bank->add_account(account_id, password, initial_ammount);
-        cout<<this->id<<": New account id is "<<account_id<<" with password "<<password<<" and initial balance "<<initial_ammount<<endl;
+        bank->add_account(account_id, password, initial_amount);
+        cout<<this->id<<": New account id is "<<account_id<<" with password "<<password<<" and initial balance "<<initial_amount<<endl;
     
     }
 }
@@ -27,7 +27,7 @@ void ATM::deposit(int account_id, int password, int amount){
     if (i!=-1){
         if (check_password(i, password)){
             int bal = bank->deposit(i, amount);cout<<this->id<<": Account "
-            <<account_id<<" new balance is "<<bal<<" after "<< amount << "$ was deposited"<<endl;
+            <<account_id<<" new balance is "<<bal<<" after "<< amount << " $ was deposited"<<endl;
         }
     }
 }
@@ -39,7 +39,7 @@ void ATM::withdraw(int account_id, int password, int amount){
             if (bank->withdraw(i, amount) == -1){
                 cout<<"Error "<<this->id
                 <<": Your transaction failed - account id "<<account_id
-                <<"balance is lower than "<<amount<<endl;
+                <<" balance is lower than "<<amount<<endl;
             }
             else{
                 cout<<this->id<<": Account "<<account_id<<" new balance is "<<
@@ -78,7 +78,7 @@ void ATM::transfer(int account_id, int password, int target_account_id, int amou
                 if (account_bal != -1){
                     int target_bal = bank->deposit(j,amount);
                     cout<<this->id<<": Transfer "<<amount<<" from account "<<account_id<<" to account "<<target_account_id<<
-                    " new account balance is "<<account_bal<<" new target account balance is "<<target_bal;
+                    " new account balance is "<<account_bal<<" new target account balance is "<<target_bal<<endl;
                 }
             }
 
@@ -100,7 +100,7 @@ bool ATM::check_password(int index, int password){
     if (bank->check_password(index, password)) return true;
     else{
         cout<< "Error "<<this->id<<
-        ": Your transaction failed- password for account id "<<index<<" is incorrect"<<endl;
+        ": Your transaction failed- password for account id "<<bank->get_account_id(index)<<" is incorrect"<<endl;
 
         return false;
     }

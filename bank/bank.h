@@ -13,6 +13,7 @@ class Bank{
         int check_account(int account_id);
         bool check_password(int i, int password);
         int get_balance(int i) {return accounts[i].get_balance();}
+        int get_account_id(int i) {return accounts[i].get_account_id();}
         int deposit(int i, int amount) {return accounts[i].deposit_funds(amount);}
         int withdraw(int i, int amount);
         int close_account(int i);

@@ -1,7 +1,7 @@
 // implement acocunt
 #include "account.h"
 
-account::account(int account_i, int password, int initial_amount){
+account::account(int account_id, int password, int initial_amount){
     this->account_id = account_id;
     this->password = password;
     this->balance = initial_amount;

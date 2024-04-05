@@ -17,6 +17,7 @@ void Bank::add_account(int account_id, int password, int initial_amount){
 }
 
 int Bank::check_account(int account_id){
+    //printf("[DEBUG] Bank Checking if account %d exists out of %d accounts...\n", account_id, (int)accounts.size());
     for (int i = 0; i < accounts.size(); i++){
         if (accounts[i].get_account_id() == account_id){
             return i;
