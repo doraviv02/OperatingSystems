@@ -5,6 +5,8 @@
 pthread_mutex_t bank_mutex_read;
 pthread_mutex_t bank_mutex_write;
 pthread_mutex_t bank_mutex_print;
+pthread_mutex_t atm_mutex_log;
+
 int bank_read_count = 0;
 
 Bank::Bank(){
@@ -12,12 +14,14 @@ Bank::Bank(){
     pthread_mutex_init(&bank_mutex_read, NULL);
     pthread_mutex_init(&bank_mutex_write, NULL);
     pthread_mutex_init(&bank_mutex_print, NULL);
+    pthread_mutex_init(&atm_mutex_log, NULL);
 }
 
 Bank::~Bank() {
     pthread_mutex_destroy(&bank_mutex_read);
     pthread_mutex_destroy(&bank_mutex_write);
     pthread_mutex_destroy(&bank_mutex_print);
+    pthread_mutex_destroy(&(atm_mutex_log));
 }
 
 // Bank::Bank(vector<account> accounts){

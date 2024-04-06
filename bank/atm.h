@@ -9,6 +9,10 @@
 class ATM{
 public:
     ATM(int id, Bank* bank);
+    ATM(const ATM& atm) {
+        id = atm.id;
+        bank = atm.bank;
+    }
     void open_account(int account_id, int password, int initial_ammount);
     void deposit(int account_id, int password, int amount);
     void withdraw(int account_id, int password, int amount);
@@ -24,7 +28,7 @@ private:
     bool check_password(int index, int password);
     void atm_log_lock();
     void atm_log_unlock();
-    inline static pthread_mutex_t atm_mutex_log;
+
 };
 
 #endif

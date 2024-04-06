@@ -107,6 +107,7 @@ int main(int argc, char* argv[])
     int ATM_total_num = argc - 1;
     pthread_t *threads = new pthread_t[ATM_total_num + 1];
     ATM_Command *ATM_Commands = new ATM_Command[ATM_total_num];
+    //pthread_mutex_init(&(atm_mutex_log), NULL);
     //pthread_t threads[ATM_total_num + 1]; //last thread is the bank thread
     //printf("[DEBUG] Number of ATMs: %d\n", ATM_total_num);
 
@@ -124,6 +125,7 @@ int main(int argc, char* argv[])
     for (int i = 0; i < ATM_total_num; i++) {
         pthread_join(threads[i], NULL);
     }
+
 
     delete[] threads;
     delete[] ATM_Commands;
