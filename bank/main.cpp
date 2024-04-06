@@ -87,7 +87,7 @@ void* ATM_runner(void* arg) // Run ATM thread
         //parse the line and do command somehow
         //printf("[DEBUG] ATM %d running %s\n", ATM_id, line.c_str());
         parse_command(line, atm_command->ATM_id);
-        sleep(1); //sleep for 100ms
+        usleep(1000000); //sleep for 100ms
     }
     file.close();
     pthread_exit(NULL);

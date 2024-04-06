@@ -1,6 +1,7 @@
 #ifndef ACCOUNT_H
 #define ACCOUNT_H
 
+#include <pthread.h>
 // implement account
 
 class account{
@@ -11,12 +12,20 @@ class account{
         int get_password() {return password;} 
         int get_balance() {return balance;}
         int deposit_funds(int amount);
-        bool withdraw_funds(int amount);
-        ~account() = default;
+        int withdraw_funds(int amount);
+        void account_read_lock();
+        void account_read_unlock();
+        void account_write_lock();
+        void account_write_unlock();
+        ~account();
+        pthread_mutex_t account_mutex_read;
+        pthread_mutex_t account_mutex_write;
+
     private:
         int account_id;
         int password;
         int balance;
+        int account_read_count;
 };
 
 
