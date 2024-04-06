@@ -24,7 +24,7 @@ private:
     bool check_password(int index, int password);
     void atm_log_lock();
     void atm_log_unlock();
-
+    inline static pthread_mutex_t atm_mutex_log;
 };
 
 #endif
