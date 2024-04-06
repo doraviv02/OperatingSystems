@@ -18,14 +18,14 @@ class account{
         void account_write_lock();
         void account_write_unlock();
         ~account();
-        pthread_mutex_t account_mutex_read;
-        pthread_mutex_t account_mutex_write;
+
 
     private:
         int account_id;
         int password;
         int balance;
         int account_read_count;
+
 };
 
 

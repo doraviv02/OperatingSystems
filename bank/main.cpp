@@ -82,12 +82,12 @@ void* ATM_runner(void* arg) // Run ATM thread
 
     ifstream file(input_file_name);
     string line;
-    //printf("[DEBUG] ATM_runner %d %s\n", ATM_id, input_file_name);
+    printf("[DEBUG] ATM_runner %d %s\n", ATM_id, input_file_name);
     while(getline(file, line)){
         //parse the line and do command somehow
         //printf("[DEBUG] ATM %d running %s\n", ATM_id, line.c_str());
-        parse_command(line, atm_command->ATM_id);
-        usleep(1000000); //sleep for 100ms
+        parse_command(line, ATM_id);
+        usleep(100000); //sleep for 100ms
     }
     file.close();
     pthread_exit(NULL);
@@ -105,21 +105,28 @@ void* Bank_runner(void* arg){
 int main(int argc, char* argv[])
 {
     int ATM_total_num = argc - 1;
-    pthread_t threads[ATM_total_num + 1]; //last thread is the bank thread
+    pthread_t *threads = new pthread_t[ATM_total_num + 1];
+    ATM_Command *ATM_Commands = new ATM_Command[ATM_total_num];
+    //pthread_t threads[ATM_total_num + 1]; //last thread is the bank thread
     //printf("[DEBUG] Number of ATMs: %d\n", ATM_total_num);
 
+    //vector<ATM_Command> ATM_Commands;
     for (int i = 0; i < ATM_total_num; i++) {
 
         ATMs.push_back(ATM(i, bank));
-        ATM_Command atm_command = {i, argv[i+1]};
-        //printf("[DEBUG] Adding ATM #%d from %s\n", i, argv[i+1]);
-        pthread_create(&threads[i], NULL, ATM_runner, &atm_command);
+        //ATM_Command atm_command = {i, argv[i+1]};
+        ATM_Commands[i] = {i, argv[i+1]};
+        printf("[DEBUG] Adding ATM #%d from %s\n", i, argv[i+1]);
+        pthread_create(&threads[i], NULL, ATM_runner, &ATM_Commands[i]);
         //printf("%s\n", argv[i]);
     }
 
     for (int i = 0; i < ATM_total_num; i++) {
         pthread_join(threads[i], NULL);
     }
+
+    delete[] threads;
+    delete[] ATM_Commands;
     return 0;
 }
 

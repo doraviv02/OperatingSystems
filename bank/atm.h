@@ -3,6 +3,7 @@
 
 // implement ATM and functions
 # include "bank.h"
+#include <pthread.h>
 
 // TODO: add log mutex
 class ATM{
@@ -14,8 +15,6 @@ public:
     void check_balance(int account_id, int password);
     void close_account(int account_id, int password);
     void transfer(int account_id, int password, int target_account_id, int amount);
-    void atm_log_lock();
-    void atm_log_unlock();
     ~ATM();
 
 private:
@@ -23,6 +22,9 @@ private:
     Bank* bank;
     int check_account_id(int acount_id);
     bool check_password(int index, int password);
+    void atm_log_lock();
+    void atm_log_unlock();
+
 };
 
 #endif

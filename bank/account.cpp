@@ -1,6 +1,9 @@
 // implement acocunt
 #include "account.h"
 
+pthread_mutex_t account_mutex_read;
+pthread_mutex_t account_mutex_write;
+
 account::account(int account_id, int password, int initial_amount){
     this->account_id = account_id;
     this->password = password;

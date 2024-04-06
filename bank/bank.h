@@ -27,9 +27,13 @@ class Bank{
         void bank_print_lock();
         void bank_print_unlock();
         ~Bank();
+
     private:
         int balance;
         vector<account> accounts;
+        pthread_mutex_t bank_mutex_read;
+        pthread_mutex_t bank_mutex_write;
+        pthread_mutex_t bank_mutex_print;
 };
 
 #endif
