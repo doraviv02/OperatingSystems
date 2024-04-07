@@ -2,6 +2,7 @@
 #define ACCOUNT_H
 
 #include <pthread.h>
+#include <iostream>
 // implement account
 
 class account{
@@ -17,6 +18,7 @@ class account{
         void account_read_unlock();
         void account_write_lock();
         void account_write_unlock();
+        int account_read_trylock();
         ~account();
 
 
@@ -25,6 +27,8 @@ class account{
         int password;
         int balance;
         int account_read_count;
+        pthread_mutex_t account_mutex_read;
+        pthread_mutex_t account_mutex_write;
 
 };
 

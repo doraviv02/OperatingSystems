@@ -31,23 +31,22 @@ void ATM::atm_log_unlock() {
 
 void ATM::open_account(int account_id, int password, int initial_amount){
     bank->bank_read_lock();
-    int account_index = bank->check_account(account_id);
+    int account_index = bank->check_account(account_id, 0.5);
     bank->bank_read_unlock();
 
     if (account_index == -1) {
         bank->bank_write_lock();
-        bank->add_account(account_id, password, initial_amount);
+        bank->add_account(account_id, password, initial_amount, 0.5);
         bank->bank_write_unlock();
 
         this->atm_log_lock();
-        sleep(1);
-        cout<<this->id<<": New account id is "<<account_id<<" with password "<<password<<" and initial balance "<<initial_amount<<endl;
+        bank->atm_log_file<<this->id<<": New account id is "<<account_id<<" with password "<<password<<" and initial balance "<<initial_amount<<endl;
         this->atm_log_unlock();
     }
     else {
+        usleep(500000);
         this->atm_log_lock();
-        sleep(1);
-        cout<<"Error "<<this->id<<": Your transaction failed – account with the same id exists"<<endl;
+        bank->atm_log_file<<"Error "<<this->id<<": Your transaction failed – account with the same id exists"<<endl;
         this->atm_log_unlock();
     }
 }
@@ -56,48 +55,49 @@ void ATM::deposit(int account_id, int password, int amount){
     int i = check_account_id(account_id);
     if (i!=-1){
         if (check_password(i, password)){
-            int bal = bank->deposit(i, amount);
+            int bal = bank->deposit(i, amount, 1);
 
             this->atm_log_lock();
-            sleep(1);
-            cout<<this->id<<": Account "
+            bank->atm_log_file<<this->id<<": Account "
             <<account_id<<" new balance is "<<bal<<" after "<< amount << " $ was deposited"<<endl;
             this->atm_log_unlock();
         }
+        else usleep(500000);
     }
+    else usleep(500000);
 }
 
 void ATM::withdraw(int account_id, int password, int amount){
     int i = check_account_id(account_id);
     if (i!=-1){
         if (check_password(i, password)){
-            if (bank->withdraw(i, amount) == -1){
+            if (bank->withdraw(i, amount, 1) == -1){
 
                 this->atm_log_lock();
-                sleep(1);
-                cout<<"Error "<<this->id
+                bank->atm_log_file<<"Error "<<this->id
                 <<": Your transaction failed - account id "<<account_id
                 <<" balance is lower than "<<amount<<endl;
                 this->atm_log_unlock();
             }
             else{
                 this->atm_log_lock();
-                sleep(1);
-                cout<<this->id<<": Account "<<account_id<<" new balance is "<<
-                bank->get_balance(i)<<" after "<<amount<<"$ was withdrew"<<endl;
+                bank->atm_log_file<<this->id<<": Account "<<account_id<<" new balance is "<<
+                bank->get_balance(i, 0)<<" after "<<amount<<" $ was withdrew"<<endl;
                 this->atm_log_unlock();
             }
         }
+        else sleep(1);
     }
+    else sleep(1);
 }
 
 void ATM::check_balance(int account_id, int password){
     int i = check_account_id(account_id);
     if (i != -1){
         if (check_password(i, password)){
-            this->atm_log_lock();
             sleep(1);
-            cout<<this->id<< ": Account "<<account_id<<" balance is "<<bank->get_balance(i)<<endl;
+            this->atm_log_lock();
+            bank->atm_log_file<<this->id<< ": Account "<<account_id<<" balance is "<<bank->get_balance(i, 0)<<endl;
             this->atm_log_unlock();
         }
     }
@@ -108,12 +108,11 @@ void ATM::close_account(int account_id, int password){
     if (i != -1){
         if (check_password(i, password)){
             bank->bank_write_lock();
-            int balance = bank->close_account(i);
+            int balance = bank->close_account(i, 1);
             bank->bank_write_unlock();
 
             this->atm_log_lock();
-            sleep(1);
-            cout<<this->id<<": Account "<<account_id<<" is now closed. Balance was "<< balance<<endl;
+            bank->atm_log_file<<this->id<<": Account "<<account_id<<" is now closed. Balance was "<< balance<<endl;
             this->atm_log_unlock();
         }
     }
@@ -125,20 +124,19 @@ void ATM::transfer(int account_id, int password, int target_account_id, int amou
         int j = check_account_id(target_account_id);
         if (j != -1){
             if (check_password(i, password)){
-                int account_bal = bank->withdraw(i,amount);
+                int account_bal = bank->withdraw(i,amount, 0.5);
                 if (account_bal != -1){
-                    int target_bal = bank->deposit(j,amount);
+                    int target_bal = bank->deposit(j,amount, 0.5);
 
                     this->atm_log_lock();
-                    sleep(1);
-                    cout<<this->id<<": Transfer "<<amount<<" from account "<<account_id<<" to account "<<target_account_id<<
+                    bank->atm_log_file<<this->id<<": Transfer "<<amount<<" from account "<<account_id<<" to account "<<target_account_id<<
                     " new account balance is "<<account_bal<<" new target account balance is "<<target_bal<<endl;
                     this->atm_log_unlock();
                 }
                 else {
+                    usleep(500000);
                     this->atm_log_lock();
-                    sleep(1);
-                    cout<<"Error "<<this->id
+                    bank->atm_log_file<<"Error "<<this->id
                         <<": Your transaction failed - account id "<<account_id
                         <<" balance is lower than "<<amount<<endl;
                     this->atm_log_unlock();
@@ -152,26 +150,24 @@ void ATM::transfer(int account_id, int password, int target_account_id, int amou
 
 int ATM::check_account_id(int account_id){
     bank->bank_read_lock();
-    int i = bank->check_account(account_id);
+    int i = bank->check_account(account_id, 0);
     bank->bank_read_unlock();
     if (i!= -1) return i;
     else{
         this->atm_log_lock();
-        sleep(1);
-        cout<< "Error "<<this->id<<": Your transaction failed - account id "<<account_id<<" does not exist"<<endl;
+        bank->atm_log_file<< "Error "<<this->id<<": Your transaction failed - account id "<<account_id<<" does not exist"<<endl;
         this->atm_log_unlock();
         return -1;
         }
 }
 
 bool ATM::check_password(int index, int password){
-    if (bank->check_password(index, password)) return true;
+    if (bank->check_password(index, password, 0)) return true;
     else{
-        int account_id = bank->get_account_id(index);
+        int account_id = bank->get_account_id(index, 0);
         this->atm_log_lock();
-        sleep(1);
-        cout<< "Error "<<this->id<<
-        ": Your transaction failed- password for account id "<<account_id<<" is incorrect"<<endl;
+        bank->atm_log_file<< "Error "<<this->id<<
+        ": Your transaction failed - password for account id "<<account_id<<" is incorrect"<<endl;
         this->atm_log_unlock();
 
         return false;

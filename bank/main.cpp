@@ -19,7 +19,6 @@ struct ATM_Command{
 Bank* bank = new Bank();
 vector<ATM> ATMs;
 
-
 void parse_command(string line, int id){
     string command, account, password;
     stringstream ss(line);
@@ -102,19 +101,27 @@ void* Bank_runner(void* arg){
     }
 }
 
+void* status_runner(void* arg) {
+    while(true) {
+        usleep(500000);
+        bank->print_accounts((int*)arg);
+        if (*((int*)arg) == 1) return NULL;
+    }
+}
+
 int main(int argc, char* argv[])
 {
+    int done_flag = 0;
     int ATM_total_num = argc - 1;
-    pthread_t *threads = new pthread_t[ATM_total_num + 1];
+    pthread_t *threads = new pthread_t[ATM_total_num + 2];
     ATM_Command *ATM_Commands = new ATM_Command[ATM_total_num];
-    //pthread_mutex_init(&(atm_mutex_log), NULL);
-    //pthread_t threads[ATM_total_num + 1]; //last thread is the bank thread
-    //printf("[DEBUG] Number of ATMs: %d\n", ATM_total_num);
+
+    //ofstream atm_log_file("log.txt");
 
     //vector<ATM_Command> ATM_Commands;
     for (int i = 0; i < ATM_total_num; i++) {
 
-        ATMs.push_back(ATM(i, bank));
+        ATMs.push_back(ATM(i+1, bank));
         //ATM_Command atm_command = {i, argv[i+1]};
         ATM_Commands[i] = {i, argv[i+1]};
         printf("[DEBUG] Adding ATM #%d from %s\n", i, argv[i+1]);
@@ -122,13 +129,19 @@ int main(int argc, char* argv[])
         //printf("%s\n", argv[i]);
     }
 
+    pthread_create(&threads[ATM_total_num], NULL, status_runner, &done_flag);
+
     for (int i = 0; i < ATM_total_num; i++) {
         pthread_join(threads[i], NULL);
     }
 
+    done_flag = 1;
+    pthread_join(threads[ATM_total_num], NULL);
 
+    //atm_log_file.close();
     delete[] threads;
     delete[] ATM_Commands;
+    delete bank;
     return 0;
 }
 
