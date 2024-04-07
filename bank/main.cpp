@@ -98,10 +98,8 @@ void* ATM_runner(void* arg) // Run ATM thread
     ifstream file(input_file_name);
 
     string line;
-    //printf("[DEBUG] ATM_runner %d %s\n", ATM_id, input_file_name);
     while(getline(file, line)){
         //parse the line and do command somehow
-        //printf("[DEBUG] ATM %d running %s\n", ATM_id, line.c_str());
         parse_command(line, ATM_id);
         usleep(100000); //sleep for 100ms
     }
@@ -109,24 +107,25 @@ void* ATM_runner(void* arg) // Run ATM thread
     pthread_exit(NULL);
 }
 
-
+// Commissions thread
 void* Bank_runner(void* arg){
     while(true){
         sleep(3); //sleep for 3 seconds
         //TODO: improve parallelism?
         //TODO: check if commission order matters
-        bank->bank_read_lock();
+        bank->bank_read_lock(); //prevent accounts from being added/removed while taking commissions
         bank->charge_commission();
         bank->bank_read_unlock();
-        if (*((int*)arg) == 1) return NULL;
+        if (*((int*)arg) == 1) return NULL; //end thread if ATMs done
     }
 }
 
+// Print Status thread
 void* status_runner(void* arg) {
     while(true) {
         usleep(500000);
         bank->print_accounts((int*)arg);
-        if (*((int*)arg) == 1) return NULL;
+        if (*((int*)arg) == 1) return NULL; //end thread if ATMs done
     }
 }
 
@@ -140,15 +139,11 @@ int main(int argc, char* argv[])
     pthread_t *threads = new pthread_t[ATM_total_num + 2];
     ATM_Command *ATM_Commands = new ATM_Command[ATM_total_num];
 
-    //ofstream atm_log_file("log.txt");
-
-    //vector<ATM_Command> ATM_Commands;
     for (int i = 0; i < ATM_total_num; i++) {
 
         ATMs.push_back(ATM(i+1, bank));
-        //ATM_Command atm_command = {i, argv[i+1]};
         ATM_Commands[i] = {i, argv[i+1]};
-        //printf("[DEBUG] Adding ATM #%d from %s\n", i, argv[i+1]);
+
         err_chk = pthread_create(&threads[i], NULL, ATM_runner, &ATM_Commands[i]);
         if (err_chk != 0) {
             perror("Bank error: pthread_create failed");
@@ -160,6 +155,7 @@ int main(int argc, char* argv[])
         //printf("%s\n", argv[i]);
     }
 
+    // Create status printing thread
     err_chk = pthread_create(&threads[ATM_total_num], NULL, status_runner, &done_flag);
     if (err_chk != 0) {
         perror("Bank error: pthread_create failed");
@@ -169,6 +165,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // Create status printing thread
     err_chk = pthread_create(&threads[ATM_total_num+1], NULL, Bank_runner, &done_flag);
     if (err_chk != 0) {
         perror("Bank error: pthread_create failed");
@@ -178,6 +175,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    // Wait for all ATM threads to finish
     for (int i = 0; i < ATM_total_num; i++) {
         err_chk = pthread_join(threads[i], NULL);
         if (err_chk != 0) {
@@ -189,7 +187,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    done_flag = 1;
+    done_flag = 1; //Signal other threads to finish
     err_chk = pthread_join(threads[ATM_total_num], NULL);
     if (err_chk != 0) {
         perror("Bank error: pthread_join failed");

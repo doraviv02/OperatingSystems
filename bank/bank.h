@@ -28,8 +28,6 @@ class Bank{
         void bank_read_unlock();
         void bank_write_lock();
         void bank_write_unlock();
-        void bank_print_lock();
-        void bank_print_unlock();
         ~Bank();
 
         ofstream atm_log_file;
@@ -39,7 +37,6 @@ class Bank{
         vector<account> accounts;
         pthread_mutex_t bank_mutex_read;
         pthread_mutex_t bank_mutex_write;
-        pthread_mutex_t bank_mutex_print;
 };
 
 #endif

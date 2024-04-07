@@ -3,9 +3,8 @@
 #include <iomanip>
 # include "bank.h"
 
-pthread_mutex_t bank_mutex_read;
-pthread_mutex_t bank_mutex_write;
-pthread_mutex_t bank_mutex_print;
+//pthread_mutex_t bank_mutex_read;
+//pthread_mutex_t bank_mutex_write;
 pthread_mutex_t atm_mutex_log;
 
 int bank_read_count = 0;
@@ -20,7 +19,6 @@ Bank::Bank(){
     int err = 0;
     err += pthread_mutex_init(&bank_mutex_read, NULL);
     err += pthread_mutex_init(&bank_mutex_write, NULL);
-    err += pthread_mutex_init(&bank_mutex_print, NULL);
     err += pthread_mutex_init(&atm_mutex_log, NULL);
 
     if (err != 0) {
@@ -34,7 +32,6 @@ Bank::~Bank() {
     int err = 0;
     err += pthread_mutex_destroy(&bank_mutex_read);
     err += pthread_mutex_destroy(&bank_mutex_write);
-    err += pthread_mutex_destroy(&bank_mutex_print);
     err += pthread_mutex_destroy(&(atm_mutex_log));
 
     if (err != 0) {
@@ -94,26 +91,11 @@ void Bank::bank_read_unlock() {
     }
 }
 
-void Bank::bank_print_lock() {
-    if (pthread_mutex_lock(&bank_mutex_print)) {
-        perror("Bank error: pthread_mutex_lock failed");
-        exit(1);
-    }
-}
-
-void Bank::bank_print_unlock() {
-    if (pthread_mutex_unlock(&bank_mutex_print)) {
-        perror("Bank error: pthread_mutex_unlock failed");
-        exit(1);
-    }
-}
 
 void Bank::add_account(int account_id, int password, int initial_amount, double sleep_dur){
     account* a = new account(account_id, password, initial_amount);
-    //bank_write_lock();
     accounts.push_back(*a);
     usleep(1000000 * sleep_dur);
-    //bank_write_unlock();
 }
 
 int Bank::check_account(int account_id, double sleep_dur){
@@ -217,6 +199,7 @@ void Bank::charge_commission(){
 
         balance += amount;
 
+        // Use log file as shared file
         if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
             perror("Bank error: pthread_mutex_lock failed");
             exit(1);
@@ -254,6 +237,7 @@ void Bank::print_accounts(int* done_flag){
         usleep(50000);
     }
 
+    // This thread is the only one printing to stdout, so locking isn't necessary
     printf("\033[2J\033[1;1H");
     cout<<"Current Bank Status"<<endl;
 
