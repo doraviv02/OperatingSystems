@@ -16,18 +16,32 @@ bool compare_accounts(account& a, account& b) {
 
 Bank::Bank(){
     this->balance = 0;
-    pthread_mutex_init(&bank_mutex_read, NULL);
-    pthread_mutex_init(&bank_mutex_write, NULL);
-    pthread_mutex_init(&bank_mutex_print, NULL);
-    pthread_mutex_init(&atm_mutex_log, NULL);
+
+    int err = 0;
+    err += pthread_mutex_init(&bank_mutex_read, NULL);
+    err += pthread_mutex_init(&bank_mutex_write, NULL);
+    err += pthread_mutex_init(&bank_mutex_print, NULL);
+    err += pthread_mutex_init(&atm_mutex_log, NULL);
+
+    if (err != 0) {
+        perror("Bank error: pthread_mutex_init failed");
+        exit(1);
+    }
     atm_log_file.open("log.txt", ofstream::out | ofstream::app);
 }
 
 Bank::~Bank() {
-    pthread_mutex_destroy(&bank_mutex_read);
-    pthread_mutex_destroy(&bank_mutex_write);
-    pthread_mutex_destroy(&bank_mutex_print);
-    pthread_mutex_destroy(&(atm_mutex_log));
+    int err = 0;
+    err += pthread_mutex_destroy(&bank_mutex_read);
+    err += pthread_mutex_destroy(&bank_mutex_write);
+    err += pthread_mutex_destroy(&bank_mutex_print);
+    err += pthread_mutex_destroy(&(atm_mutex_log));
+
+    if (err != 0) {
+        perror("Bank error: pthread_mutex_destroy failed");
+        exit(1);
+    }
+
     atm_log_file.close();
 }
 
@@ -37,37 +51,61 @@ Bank::~Bank() {
 // }
 
 void Bank::bank_write_lock() {
-    pthread_mutex_lock(&bank_mutex_write);
+    if (pthread_mutex_lock(&bank_mutex_write) != 0) {
+        perror("Bank error: pthread_mutex_lock failed");
+        exit(1);
+    }
 }
 
 void Bank::bank_write_unlock() {
-    pthread_mutex_unlock(&bank_mutex_write);
+    if (pthread_mutex_unlock(&bank_mutex_write) != 0) {
+        perror("Bank error: pthread_mutex_unlock failed");
+        exit(1);
+    }
 }
 
 void Bank::bank_read_lock() {
-    pthread_mutex_lock(&bank_mutex_read);
+    if (pthread_mutex_lock(&bank_mutex_read)) {
+        perror("Bank error: pthread_mutex_lock failed");
+        exit(1);
+    }
     bank_read_count++;
     if (bank_read_count == 1) {
         bank_write_lock();
     }
-    pthread_mutex_unlock(&bank_mutex_read);
+    if (pthread_mutex_unlock(&bank_mutex_read)) {
+        perror("Bank error: pthread_mutex_unlock failed");
+        exit(1);
+    }
 }
 
 void Bank::bank_read_unlock() {
-    pthread_mutex_lock(&bank_mutex_read);
+    if (pthread_mutex_lock(&bank_mutex_read)) {
+        perror("Bank error: pthread_mutex_lock failed");
+        exit(1);
+    }
     bank_read_count--;
     if (bank_read_count == 0) {
         bank_write_unlock();
     }
-    pthread_mutex_unlock(&bank_mutex_read);
+    if (pthread_mutex_unlock(&bank_mutex_read)) {
+        perror("Bank error: pthread_mutex_unlock failed");
+        exit(1);
+    }
 }
 
 void Bank::bank_print_lock() {
-    pthread_mutex_lock(&bank_mutex_print);
+    if (pthread_mutex_lock(&bank_mutex_print)) {
+        perror("Bank error: pthread_mutex_lock failed");
+        exit(1);
+    }
 }
 
 void Bank::bank_print_unlock() {
-    pthread_mutex_unlock(&bank_mutex_print);
+    if (pthread_mutex_unlock(&bank_mutex_print)) {
+        perror("Bank error: pthread_mutex_unlock failed");
+        exit(1);
+    }
 }
 
 void Bank::add_account(int account_id, int password, int initial_amount, double sleep_dur){
@@ -148,15 +186,7 @@ int Bank::withdraw(int i, int amount, double sleep_dur){
     int withdraw_ret = accounts[i].withdraw_funds(amount);
     usleep(1000000 * sleep_dur);
     accounts[i].account_write_unlock();
-//    if (withdraw_ret){
-//        balance += amount;
-//
-//        accounts[i].account_read_lock();
-//        int new_balance = accounts[i].get_balance();
-//        accounts[i].account_read_unlock();
-//        return new_balance;
-//    }
-    //return -1;
+
     return withdraw_ret;
 }
 
@@ -177,7 +207,8 @@ void Bank::charge_commission(){
     for (int i = 0; i < accounts.size(); i++)
     {
         accounts[i].account_read_lock();
-        int amount = accounts[i].get_balance() * percent / 100;
+        int amount = floor((double)accounts[i].get_balance() * (double)percent / 100.0);
+        int id = accounts[i].get_account_id();
         accounts[i].account_read_unlock();
 
         accounts[i].account_write_lock();
@@ -185,11 +216,21 @@ void Bank::charge_commission(){
         accounts[i].account_write_unlock();
 
         balance += amount;
+
+        if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
+            perror("Bank error: pthread_mutex_lock failed");
+            exit(1);
+        }
+        atm_log_file << "Bank: commissions of " << percent << " % were charged, the bank gained " << amount <<
+        " $ from account " << id << endl;
+        if (pthread_mutex_unlock(&(atm_mutex_log)) != 0) {
+            perror("Bank error: pthread_mutex_unlock failed");
+            exit(1);
+        }
     }   
-   
+
 }
 
-//TODO: figure out if this needs mutex
 void Bank::print_accounts(int* done_flag){
     int number_of_accounts, mutex_success;
     while(1) {

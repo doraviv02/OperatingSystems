@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <algorithm>
+#include <math.h>
 
 using namespace std;
 

@@ -3,7 +3,10 @@
 
 #include <pthread.h>
 #include <iostream>
+#include <errno.h>
 // implement account
+
+using namespace std;
 
 class account{
     public:

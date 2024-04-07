@@ -4,8 +4,8 @@
 // implement ATM and functions
 # include "bank.h"
 #include <pthread.h>
+#include <iomanip>
 
-// TODO: add log mutex
 class ATM{
 public:
     ATM(int id, Bank* bank);

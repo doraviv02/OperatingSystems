@@ -19,13 +19,19 @@ ATM::~ATM() {
 
 void ATM::atm_log_lock() {
     //printf("[DEBUG] %d Aquiring log mutex %p...\n", this->id, &(atm_mutex_log));
-    pthread_mutex_lock(&(atm_mutex_log));
+    if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
+        perror("Bank error: pthread_mutex_lock failed");
+        exit(1);
+    }
     //printf("[DEBUG] %d Aquired log mutex %p!\n", this->id, &(atm_mutex_log));
 }
 
 void ATM::atm_log_unlock() {
     //printf("[DEBUG] %d unlocking log mutex %p...\n", this->id, &(atm_mutex_log));
-    pthread_mutex_unlock(&(atm_mutex_log));
+    if (pthread_mutex_unlock(&(atm_mutex_log)) != 0) {
+        perror("Bank error: pthread_mutex_unlock failed");
+        exit(1);
+    }
     //printf("[DEBUG] %d unlocking done %p!\n", this->id, &(atm_mutex_log));
 }
 
@@ -40,7 +46,8 @@ void ATM::open_account(int account_id, int password, int initial_amount){
         bank->bank_write_unlock();
 
         this->atm_log_lock();
-        bank->atm_log_file<<this->id<<": New account id is "<<account_id<<" with password "<<password<<" and initial balance "<<initial_amount<<endl;
+        bank->atm_log_file<<this->id<<": New account id is "<<account_id<<" with password "<<setw(4) << setfill('0') <<
+        password<<" and initial balance "<<initial_amount<<endl;
         this->atm_log_unlock();
     }
     else {
