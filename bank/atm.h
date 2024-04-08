@@ -5,6 +5,7 @@
 # include "bank.h"
 #include <pthread.h>
 #include <iomanip>
+#include <errno.h>
 
 class ATM{
 public:

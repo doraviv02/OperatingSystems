@@ -19,7 +19,7 @@ ATM::~ATM() {
 
 void ATM::atm_log_lock() {
     //printf("[DEBUG] %d Aquiring log mutex %p...\n", this->id, &(atm_mutex_log));
-    if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
+    if (pthread_mutex_lock(&(atm_mutex_log)) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_lock failed");
         exit(1);
     }
@@ -28,7 +28,7 @@ void ATM::atm_log_lock() {
 
 void ATM::atm_log_unlock() {
     //printf("[DEBUG] %d unlocking log mutex %p...\n", this->id, &(atm_mutex_log));
-    if (pthread_mutex_unlock(&(atm_mutex_log)) != 0) {
+    if (pthread_mutex_unlock(&(atm_mutex_log)) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }
@@ -36,12 +36,13 @@ void ATM::atm_log_unlock() {
 }
 
 void ATM::open_account(int account_id, int password, int initial_amount){
-    bank->bank_read_lock();
+    //bank->bank_read_lock();
+    bank->bank_write_lock();
     int account_index = bank->check_account(account_id, 0.5);
-    bank->bank_read_unlock();
+    //bank->bank_read_unlock();
 
     if (account_index == -1) {
-        bank->bank_write_lock();
+        //bank->bank_write_lock();
         bank->add_account(account_id, password, initial_amount, 0.5);
         bank->bank_write_unlock();
 
@@ -52,6 +53,7 @@ void ATM::open_account(int account_id, int password, int initial_amount){
     }
     else {
         usleep(500000);
+        bank->bank_write_unlock();
         this->atm_log_lock();
         bank->atm_log_file<<"Error "<<this->id<<": Your transaction failed – account with the same id exists"<<endl;
         this->atm_log_unlock();

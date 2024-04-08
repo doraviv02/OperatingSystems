@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <algorithm>
 #include <math.h>
+#include <errno.h>
 
 using namespace std;
 

@@ -21,7 +21,7 @@ Bank::Bank(){
     err += pthread_mutex_init(&bank_mutex_write, NULL);
     err += pthread_mutex_init(&atm_mutex_log, NULL);
 
-    if (err != 0) {
+    if (err != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_init failed");
         exit(1);
     }
@@ -34,7 +34,7 @@ Bank::~Bank() {
     err += pthread_mutex_destroy(&bank_mutex_write);
     err += pthread_mutex_destroy(&(atm_mutex_log));
 
-    if (err != 0) {
+    if (err != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_destroy failed");
         exit(1);
     }
@@ -48,21 +48,21 @@ Bank::~Bank() {
 // }
 
 void Bank::bank_write_lock() {
-    if (pthread_mutex_lock(&bank_mutex_write) != 0) {
+    if (pthread_mutex_lock(&bank_mutex_write) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_lock failed");
         exit(1);
     }
 }
 
 void Bank::bank_write_unlock() {
-    if (pthread_mutex_unlock(&bank_mutex_write) != 0) {
+    if (pthread_mutex_unlock(&bank_mutex_write) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }
 }
 
 void Bank::bank_read_lock() {
-    if (pthread_mutex_lock(&bank_mutex_read)) {
+    if (pthread_mutex_lock(&bank_mutex_read) && errno != 0) {
         perror("Bank error: pthread_mutex_lock failed");
         exit(1);
     }
@@ -70,14 +70,14 @@ void Bank::bank_read_lock() {
     if (bank_read_count == 1) {
         bank_write_lock();
     }
-    if (pthread_mutex_unlock(&bank_mutex_read)) {
+    if (pthread_mutex_unlock(&bank_mutex_read) && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }
 }
 
 void Bank::bank_read_unlock() {
-    if (pthread_mutex_lock(&bank_mutex_read)) {
+    if (pthread_mutex_lock(&bank_mutex_read) && errno != 0) {
         perror("Bank error: pthread_mutex_lock failed");
         exit(1);
     }
@@ -85,7 +85,7 @@ void Bank::bank_read_unlock() {
     if (bank_read_count == 0) {
         bank_write_unlock();
     }
-    if (pthread_mutex_unlock(&bank_mutex_read)) {
+    if (pthread_mutex_unlock(&bank_mutex_read) && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }

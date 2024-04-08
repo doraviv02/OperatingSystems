@@ -9,11 +9,11 @@ account::account(int account_id, int password, int initial_amount){
     this->password = password;
     this->balance = initial_amount;
     this->account_read_count = 0;
-    if (pthread_mutex_init(&account_mutex_read, NULL) != 0) {
+    if (pthread_mutex_init(&account_mutex_read, NULL) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_init failed");
         exit(1);
     }
-    if (pthread_mutex_init(&account_mutex_write, NULL) != 0) {
+    if (pthread_mutex_init(&account_mutex_write, NULL) != 0 && errno != 0){
         perror("Bank error: pthread_mutex_init failed");
         exit(1);
     }
@@ -32,7 +32,7 @@ account::~account() {
 
 void account::account_write_lock() {
     //printf("[DEBUG] Acquiring writer mutex %p for account %d\n", &account_mutex_write, this->account_id);
-    if (pthread_mutex_lock(&account_mutex_write) != 0) {
+    if (pthread_mutex_lock(&account_mutex_write) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_lock failed");
         exit(1);
     }
@@ -41,7 +41,7 @@ void account::account_write_lock() {
 
 void account::account_write_unlock() {
     //printf("[DEBUG] Unlocking writer mutex %p for account %d\n", &account_mutex_write, this->account_id);
-    if (pthread_mutex_unlock(&account_mutex_write) != 0) {
+    if (pthread_mutex_unlock(&account_mutex_write) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }
@@ -50,7 +50,7 @@ void account::account_write_unlock() {
 
 void account::account_read_lock() {
     //printf("[DEBUG] Acquiring reader mutex %p for account %d...", &account_mutex_read, this->account_id);
-    if (pthread_mutex_lock(&account_mutex_read) != 0) {
+    if (pthread_mutex_lock(&account_mutex_read) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_lock failed");
         exit(1);
     }
@@ -59,7 +59,7 @@ void account::account_read_lock() {
         account_write_lock();
     }
     //printf(" %d readers\n", account_read_count);
-    if (pthread_mutex_unlock(&account_mutex_read) != 0) {
+    if (pthread_mutex_unlock(&account_mutex_read) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }
@@ -68,7 +68,7 @@ void account::account_read_lock() {
 
 void account::account_read_unlock() {
     //printf("[DEBUG] Unlocking reader mutex %p for account %d...", &account_mutex_read, this->account_id);
-    if (pthread_mutex_lock(&account_mutex_read) != 0) {
+    if (pthread_mutex_lock(&account_mutex_read) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_lock failed");
         exit(1);
     }
@@ -77,7 +77,7 @@ void account::account_read_unlock() {
         account_write_unlock();
     }
     //printf(" %d readers\n", account_read_count);
-    if (pthread_mutex_unlock(&account_mutex_read) != 0) {
+    if (pthread_mutex_unlock(&account_mutex_read) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }
@@ -90,14 +90,14 @@ int account::account_read_trylock() {
     if (account_read_count == 1) {
         if (pthread_mutex_trylock(&account_mutex_write) != 0) {
             account_read_count--;
-            if (pthread_mutex_unlock(&account_mutex_read) != 0) {
+            if (pthread_mutex_unlock(&account_mutex_read) != 0 && errno != 0) {
                 perror("Bank error: pthread_mutex_unlock failed");
                 exit(1);
             }
             return -1;
         }
     }
-    if (pthread_mutex_unlock(&account_mutex_read) != 0) {
+    if (pthread_mutex_unlock(&account_mutex_read ) != 0 && errno != 0) {
         perror("Bank error: pthread_mutex_unlock failed");
         exit(1);
     }
