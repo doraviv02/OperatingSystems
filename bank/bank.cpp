@@ -200,13 +200,13 @@ void Bank::charge_commission(){
         balance += amount;
 
         // Use log file as shared file
-        if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
+        if (pthread_mutex_lock(&(atm_mutex_log)) != 0  && errno != 0) {
             perror("Bank error: pthread_mutex_lock failed");
             exit(1);
         }
         atm_log_file << "Bank: commissions of " << percent << " % were charged, the bank gained " << amount <<
         " $ from account " << id << endl;
-        if (pthread_mutex_unlock(&(atm_mutex_log)) != 0) {
+        if (pthread_mutex_unlock(&(atm_mutex_log)) != 0  && errno != 0) {
             perror("Bank error: pthread_mutex_unlock failed");
             exit(1);
         }
