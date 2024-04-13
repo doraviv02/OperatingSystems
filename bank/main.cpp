@@ -81,6 +81,7 @@ void parse_command(string line, int id){
         getline(ss, amount, ' '); //get the amount
         int target = stoi(target_account);
         int am = stoi(amount);
+        
         ATMs[id].transfer(account_id, pass, target, am);
 //        printf("[DEBUG] ATM %d Transferring %d from account %d with password %d to account %d\n", id,
 //               am, account_id, pass, target);
@@ -120,10 +121,10 @@ void* Bank_runner(void* arg){
     }
 }
 
-// Print Status thread
+// Print Status thread0
 void* status_runner(void* arg) {
     while(true) {
-        usleep(500000);
+        usleep(500000); //sleep every 0.5 seconds
         bank->print_accounts((int*)arg);
         if (*((int*)arg) == 1) return NULL; //end thread if ATMs done
     }

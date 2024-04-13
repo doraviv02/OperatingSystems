@@ -64,9 +64,9 @@ void ATM::deposit(int account_id, int password, int amount){
     int i = check_account_id(account_id);
     if (i!=-1){
         if (check_password(i, password)){
-            int bal = bank->deposit(i, amount, 1);
 
             this->atm_log_lock();
+            int bal = bank->deposit(i, amount, 1);
             bank->atm_log_file<<this->id<<": Account "
             <<account_id<<" new balance is "<<bal<<" after "<< amount << " $ was deposited"<<endl;
             this->atm_log_unlock();
@@ -80,7 +80,7 @@ void ATM::withdraw(int account_id, int password, int amount){
     int i = check_account_id(account_id);
     if (i!=-1){
         if (check_password(i, password)){
-            if (bank->withdraw(i, amount, 1) == -1){
+            if (bank->get_balance(i,0) < amount){//bank->withdraw(i, amount, 1) == -1){
 
                 this->atm_log_lock();
                 bank->atm_log_file<<"Error "<<this->id
@@ -90,6 +90,7 @@ void ATM::withdraw(int account_id, int password, int amount){
             }
             else{
                 this->atm_log_lock();
+                bank->withdraw(i, amount, 1);
                 bank->atm_log_file<<this->id<<": Account "<<account_id<<" new balance is "<<
                 bank->get_balance(i, 0)<<" after "<<amount<<" $ was withdrew"<<endl;
                 this->atm_log_unlock();
@@ -133,13 +134,13 @@ void ATM::transfer(int account_id, int password, int target_account_id, int amou
         int j = check_account_id(target_account_id);
         if (j != -1){
             if (check_password(i, password)){
-                int account_bal = bank->withdraw(i,amount, 0.5);
-                if (account_bal != -1){
-                    int target_bal = bank->deposit(j,amount, 0.5);
-
+                //int account_bal = bank->withdraw(i,amount, 0.5);
+                if (bank->get_balance(i,0) >= amount){//account_bal != -1){
+                    //int target_bal = bank->deposit(j,amount, 0.5);
                     this->atm_log_lock();
+                    int target_bal = bank->transfer(i,j,amount, 1);
                     bank->atm_log_file<<this->id<<": Transfer "<<amount<<" from account "<<account_id<<" to account "<<target_account_id<<
-                    " new account balance is "<<account_bal<<" new target account balance is "<<target_bal<<endl;
+                    " new account balance is "<<bank->get_balance(i,0)<<" new target account balance is "<<target_bal<<endl;
                     this->atm_log_unlock();
                 }
                 else {
@@ -151,9 +152,26 @@ void ATM::transfer(int account_id, int password, int target_account_id, int amou
                     this->atm_log_unlock();
                 }
             }
-
+            else{
+                this->atm_log_lock();
+                bank->atm_log_file<< "Error "<<this->id<<
+                ": Your transaction failed - password for account id "<<account_id<<" is incorrect"<<endl;
+                this->atm_log_unlock();
+            }
+        }
+        else{
+            this->atm_log_lock();
+            bank->atm_log_file<< "Error "<<this->id<<": Your transaction failed - account id "<<target_account_id<<" does not exist"<<endl;
+            this->atm_log_unlock();
         }
     }
+    else{
+        this->atm_log_lock();
+        bank->atm_log_file<< "Error "<<this->id<<": Your transaction failed - account id "<<account_id<<" does not exist"<<endl;
+        this->atm_log_unlock();
+    
+    }
+
 }
 
 
