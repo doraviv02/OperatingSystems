@@ -22,6 +22,7 @@ class Bank{
         int get_account_id(int i, double sleep_dur);
         int deposit(int i, int amount, double sleep_dur);
         int withdraw(int i, int amount, double sleep_dur);
+        int transfer(int i, int j, int amount, double sleep_dur);
         int close_account(int i, double sleep_dur);
         void charge_commission();
         void print_accounts(int* done_flag);

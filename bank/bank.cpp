@@ -172,6 +172,18 @@ int Bank::withdraw(int i, int amount, double sleep_dur){
     return withdraw_ret;
 }
 
+int Bank::transfer(int i, int j, int amount, double sleep_dur){
+    accounts[i].account_write_lock();
+    accounts[j].account_write_lock();
+    accounts[i].withdraw_funds(amount);
+    int deposit_ret = accounts[j].deposit_funds(amount);
+    usleep(1000000 * sleep_dur);
+    accounts[i].account_write_unlock();
+    accounts[j].account_write_unlock();
+
+    return deposit_ret;
+}
+
 int Bank::close_account(int i, double sleep_dur){
     accounts[i].account_read_lock();
     int balance = accounts[i].get_balance();
@@ -188,24 +200,34 @@ void Bank::charge_commission(){
     int percent = rand()%5 + 1;
     for (int i = 0; i < accounts.size(); i++)
     {
+
+
         accounts[i].account_read_lock();
         int amount = floor((double)accounts[i].get_balance() * (double)percent / 100.0);
         int id = accounts[i].get_account_id();
         accounts[i].account_read_unlock();
 
-        accounts[i].account_write_lock();
-        accounts[i].withdraw_funds(amount);
-        accounts[i].account_write_unlock();
-
-        balance += amount;
-
-        // Use log file as shared file
         if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
             perror("Bank error: pthread_mutex_lock failed");
             exit(1);
         }
+
+        accounts[i].account_write_lock();
+        accounts[i].withdraw_funds(amount);
+        balance += amount;
         atm_log_file << "Bank: commissions of " << percent << " % were charged, the bank gained " << amount <<
         " $ from account " << id << endl;
+        accounts[i].account_write_unlock();
+
+        // balance += amount;
+        // atm_log_file << "Bank: commissions of " << percent << " % were charged, the bank gained " << amount <<
+        // " $ from account " << id << endl;
+        // Use log file as shared file
+        // if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
+        //     perror("Bank error: pthread_mutex_lock failed");
+        //     exit(1);
+        // }
+        
         if (pthread_mutex_unlock(&(atm_mutex_log)) != 0) {
             perror("Bank error: pthread_mutex_unlock failed");
             exit(1);
