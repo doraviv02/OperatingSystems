@@ -56,8 +56,8 @@ void parse_command(string line, int id){
         bank->bank_write_lock();
         ATMs[id].open_account(account_id, pass, initial);
         bank->bank_write_unlock();
-        printf("[DEBUG] ATM %d Opening account %d with password %d and initial amount %d\n", id, account_id,
-               pass, initial);
+//        printf("[DEBUG] ATM %d Opening account %d with password %d and initial amount %d\n", id, account_id,
+//               pass, initial);
     }
     else if (command == "D"){
         string amount;
@@ -112,7 +112,7 @@ void* ATM_runner(void* arg) // Run ATM thread
     ATM_Command* atm_command = (ATM_Command*) arg;
     char* input_file_name = atm_command->command;
     int ATM_id = atm_command->ATM_id;
-    printf("[DEBUG] ATM ID %d from %s\n", ATM_id, input_file_name);
+    //printf("[DEBUG] ATM ID %d from %s\n", ATM_id, input_file_name);
     ifstream file(input_file_name);
 
     string line;

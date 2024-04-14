@@ -25,14 +25,14 @@ void ATM::open_account(int account_id, int password, int initial_amount){
     //bank->bank_read_lock();
     //bank->bank_write_lock();
     int MY_ID = id;
-    printf("[DEBUG] AAA %d\n", MY_ID);
+    //printf("[DEBUG] AAA %d\n", MY_ID);
     int account_index = bank->check_account(account_id, 0);
     //bank->bank_read_unlock();
 
     if (account_index == -1) {
         //bank->bank_write_lock();
         //atm_log_lock();
-        printf("[DEBUG] AAAAAA %d\n", MY_ID);
+        //printf("[DEBUG] AAAAAA %d\n", MY_ID);
         bank->add_account(MY_ID, account_id, password, initial_amount, 1);
 //        atm_log_file<<this->id<<": New account id is "<<account_id<<" with password "<<setw(4) << setfill('0') <<
 //        password<<" and initial balance "<<initial_amount<<endl;

@@ -295,10 +295,10 @@ void Bank::charge_commission(){
         int id = it->get_account_id();
         //accounts[i].account_read_unlock();
 
-        if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
-            perror("Bank error: pthread_mutex_lock failed");
-            exit(1);
-        }
+//        if (pthread_mutex_lock(&(atm_mutex_log)) != 0) {
+//            perror("Bank error: pthread_mutex_lock failed");
+//            exit(1);
+//        }
 
         //accounts[i].account_write_lock();
         it->withdraw_funds(amount);
@@ -317,10 +317,10 @@ void Bank::charge_commission(){
         //     exit(1);
         // }
         
-        if (pthread_mutex_unlock(&(atm_mutex_log)) != 0) {
-            perror("Bank error: pthread_mutex_unlock failed");
-            exit(1);
-        }
+//        if (pthread_mutex_unlock(&(atm_mutex_log)) != 0) {
+//            perror("Bank error: pthread_mutex_unlock failed");
+//            exit(1);
+//        }
 
         it->account_write_unlock();
     }   
