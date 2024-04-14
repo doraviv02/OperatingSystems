@@ -25,10 +25,10 @@ public:
 private:
     int id;
     Bank* bank;
-    int check_account_id(int acount_id);
-    bool check_password(int index, int password);
-    void atm_log_lock();
-    void atm_log_unlock();
+    int check_account_id(int acount_id, double sleep_dur);
+    bool check_password(int index, int password, double sleep_dur);
+//    void atm_log_lock();
+//    void atm_log_unlock();
 
 };
 

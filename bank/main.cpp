@@ -11,6 +11,9 @@
 
 using namespace std;
 
+extern pthread_mutex_t atm_mutex_log;
+extern ofstream atm_log_file;
+
 struct ATM_Command{
     int ATM_id;
     char* command;
@@ -45,34 +48,45 @@ void parse_command(string line, int id){
     int account_id = stoi(account);
     int pass = stoi(password);
 
+    printf("[DEBUG %d] %s\n", id, line.c_str());
     if (command == "O"){
         string initial_amount;
         getline(ss, initial_amount, ' '); //get the initial amount
         int initial = stoi(initial_amount);
+        bank->bank_write_lock();
         ATMs[id].open_account(account_id, pass, initial);
-//        printf("[DEBUG] ATM %d Opening account %d with password %d and initial amount %d\n", id, account_id,
-//               pass, initial);
+        bank->bank_write_unlock();
+        printf("[DEBUG] ATM %d Opening account %d with password %d and initial amount %d\n", id, account_id,
+               pass, initial);
     }
     else if (command == "D"){
         string amount;
         getline(ss, amount, ' '); //get the amount
         int am = stoi(amount);
+        bank->bank_read_lock();
         ATMs[id].deposit(account_id, pass, am);
+        bank->bank_read_unlock();
         //printf("[DEBUG] ATM %d Depositing %d to account %d with password %d\n", id, am, account_id, pass);
     }
     else if (command == "W"){
         string amount;
         getline(ss, amount, ' '); //get the amount
         int am = stoi(amount);
+        bank->bank_read_lock();
         ATMs[id].withdraw(account_id, pass, am);
+        bank->bank_read_unlock();
         //printf("[DEBUG] ATM %d Withdrawing %d from account %d with password %d\n", id, am, account_id, pass);
     }
     else if (command == "B"){
+        bank->bank_read_lock();
         ATMs[id].check_balance(account_id, pass);
+        bank->bank_read_unlock();
         //printf("[DEBUG] ATM %d Checking balance of account %d with password %d\n", id, account_id, pass);
     }
     else if (command == "Q"){ //close account
+        bank->bank_write_lock();
         ATMs[id].close_account(account_id, pass);
+        bank->bank_write_unlock();
         //printf("[DEBUG] ATM %d Closing account %d with password %d\n", id, account_id, pass);
     }
     else if (command == "T"){
@@ -81,11 +95,14 @@ void parse_command(string line, int id){
         getline(ss, amount, ' '); //get the amount
         int target = stoi(target_account);
         int am = stoi(amount);
-        
+
+        bank->bank_read_lock();
         ATMs[id].transfer(account_id, pass, target, am);
+        bank->bank_read_unlock();
 //        printf("[DEBUG] ATM %d Transferring %d from account %d with password %d to account %d\n", id,
 //               am, account_id, pass, target);
     }
+    printf("[DEBUG %d] %s DONE\n", id, line.c_str());
     
 }
 
@@ -95,7 +112,7 @@ void* ATM_runner(void* arg) // Run ATM thread
     ATM_Command* atm_command = (ATM_Command*) arg;
     char* input_file_name = atm_command->command;
     int ATM_id = atm_command->ATM_id;
-
+    printf("[DEBUG] ATM ID %d from %s\n", ATM_id, input_file_name);
     ifstream file(input_file_name);
 
     string line;
@@ -117,7 +134,7 @@ void* Bank_runner(void* arg){
         bank->bank_read_lock(); //prevent accounts from being added/removed while taking commissions
         bank->charge_commission();
         bank->bank_read_unlock();
-        if (*((int*)arg) == 1) return NULL; //end thread if ATMs done
+        if (*((int*)arg) == 1) pthread_exit(NULL);; //end thread if ATMs done
     }
 }
 
@@ -126,7 +143,7 @@ void* status_runner(void* arg) {
     while(true) {
         usleep(500000); //sleep every 0.5 seconds
         bank->print_accounts((int*)arg);
-        if (*((int*)arg) == 1) return NULL; //end thread if ATMs done
+        if (*((int*)arg) == 1) pthread_exit(NULL);; //end thread if ATMs done
     }
 }
 
@@ -140,12 +157,16 @@ int main(int argc, char* argv[])
     pthread_t *threads = new pthread_t[ATM_total_num + 2];
     ATM_Command *ATM_Commands = new ATM_Command[ATM_total_num];
 
+    pthread_mutex_init(&atm_mutex_log, NULL);
+
+    atm_log_file.open("log.txt");
+
     for (int i = 0; i < ATM_total_num; i++) {
 
         ATMs.push_back(ATM(i+1, bank));
         ATM_Commands[i] = {i, argv[i+1]};
 
-        err_chk = pthread_create(&threads[i], NULL, ATM_runner, &ATM_Commands[i]);
+        err_chk = pthread_create(&threads[i], NULL, ATM_runner, (void*)&ATM_Commands[i]);
         if (err_chk != 0) {
             perror("Bank error: pthread_create failed");
             delete[] threads;
@@ -156,8 +177,8 @@ int main(int argc, char* argv[])
         //printf("%s\n", argv[i]);
     }
 
-    // Create status printing thread
-    err_chk = pthread_create(&threads[ATM_total_num], NULL, status_runner, &done_flag);
+    //Create status printing thread
+    err_chk = pthread_create(&threads[ATM_total_num], NULL, status_runner, (void*)&done_flag);
     if (err_chk != 0) {
         perror("Bank error: pthread_create failed");
         delete[] threads;
@@ -166,8 +187,9 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // Create status printing thread
-    err_chk = pthread_create(&threads[ATM_total_num+1], NULL, Bank_runner, &done_flag);
+
+    // Create commissions thread
+    err_chk = pthread_create(&threads[ATM_total_num+1], NULL, Bank_runner, (void*)&done_flag);
     if (err_chk != 0) {
         perror("Bank error: pthread_create failed");
         delete[] threads;
@@ -175,6 +197,8 @@ int main(int argc, char* argv[])
         delete bank;
         return 1;
     }
+
+
 
     // Wait for all ATM threads to finish
     for (int i = 0; i < ATM_total_num; i++) {
@@ -197,7 +221,7 @@ int main(int argc, char* argv[])
         delete bank;
         return 1;
     }
-
+//
     err_chk = pthread_join(threads[ATM_total_num+1], NULL);
     if (err_chk != 0) {
         perror("Bank error: pthread_join failed");
@@ -207,8 +231,10 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    //atm_log_file.close();
+
     delete[] threads;
+    pthread_mutex_destroy(&atm_mutex_log);
+    atm_log_file.close();
     delete[] ATM_Commands;
     delete bank;
     return 0;
